@@ -35,14 +35,14 @@
 The system is trained on the **TuSimple benchmark** and served via a Flask REST API with a modern, responsive web interface. A threading lock prevents concurrent GPU allocation, ensuring stable inference on single-GPU systems.
 
 **Key Features:**
-- 🚗 **Real-time lane detection** and segmentation
-- 🎯 **Binary + Instance segmentation** simultaneously
-- ⚡ **Lightweight model** (~10MB) optimized for deployment
-- 🔄 **Multiple backbone options** (ENet, U-Net, DeepLabv3+)
-- 🌐 **Modern web interface** with drag-and-drop upload
-- 🔌 **REST API** for integration
-- 🐳 **Docker ready** for easy deployment
-- 📊 **Pre-trained weights** on TuSimple dataset
+- **Real-time lane detection** and segmentation
+- **Binary + Instance segmentation** simultaneously
+- **Lightweight model** (~10MB) optimized for deployment
+- **Multiple backbone options** (ENet, U-Net, DeepLabv3+)
+- **Modern web interface** with drag-and-drop upload
+- **REST API** for integration
+- **Docker ready** for easy deployment
+- **Pre-trained weights** on TuSimple dataset
 
 ---
 
@@ -54,7 +54,7 @@ The system is trained on the **TuSimple benchmark** and served via a Flask REST 
 - **Instance segmentation** (individual lane identification with unique colors)
 - **Lightweight model** (~10MB) optimized for deployment
 - **Support for multiple backbone architectures** (ENet, U-Net, DeepLabv3+)
-- **Pre-trained weights** on TuSimple dataset
+- **Pre trained weights** on TuSimple dataset
 
 ### Training Options
 - **ENet encoder/decoder** (default, fastest, ~3M parameters)

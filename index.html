@@ -1,1757 +1,2671 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lane Detection Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #f7f5f0;
-      --panel: #fbfaf7;
-      --surface: #fdfcf9;
-      --surface-2: #f4f1eb;
-      --border: rgba(28, 37, 56, 0.08);
-      --border-strong: rgba(28, 37, 56, 0.14);
-      --text: #1f2a37;
-      --muted: #6b7280;
-      --blue: #44648d;
-      --blue-soft: #6584ad;
-      --green: #5ea86c;
-      --amber: #c38a3e;
-      --red: #c65a5a;
-      --shadow: 0 18px 40px rgba(56, 69, 91, 0.08);
-      --radius: 16px;
-      --font-body: "DM Sans", sans-serif;
-      --font-mono: "DM Mono", monospace;
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      min-height: 100vh;
-      padding-top: 76px;
-      overflow-x: hidden;
-      background:
-        radial-gradient(circle at top center, rgba(101, 132, 173, 0.16), transparent 32%),
-        radial-gradient(circle at 50% 38%, rgba(217, 182, 128, 0.08), transparent 28%),
-        var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background-image:
-        radial-gradient(rgba(101, 132, 173, 0.16) 1px, transparent 1px);
-      background-size: 48px 48px;
-      background-position: 0 0;
-      opacity: 0.42;
-      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.62));
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button,
-    input,
-    textarea,
-    select {
-      font: inherit;
-    }
-
-    img {
-      display: block;
-      max-width: 100%;
-    }
-
-    .mono {
-      font-family: var(--font-mono);
-    }
-
-    .site-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 40;
-      height: 76px;
-      border-bottom: 1px solid rgba(28, 37, 56, 0.06);
-      background: rgba(247, 245, 240, 0.84);
-      backdrop-filter: blur(18px);
-    }
-
-    .site-nav .container {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      display: grid;
-      place-items: center;
-      background: rgba(68, 100, 141, 0.12);
-      border: 1px solid rgba(101, 132, 173, 0.28);
-      color: var(--blue);
-      flex-shrink: 0;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-    }
-
-    .brand-text {
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      color: #283648;
-    }
-
-    .nav-links {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-left: auto;
-    }
-
-    .nav-link {
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      padding: 10px 14px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: color 0.2s ease, background 0.2s ease;
-      font-size: 15px;
-    }
-
-    .nav-link:hover {
-      color: var(--text);
-      background: rgba(101, 132, 173, 0.08);
-    }
-
-    .hero {
-      padding: 48px 0 52px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    .hero-copy {
-      max-width: 620px;
-    }
-
-    .eyebrow-pill {
-      width: fit-content;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      margin-bottom: 24px;
-      border-radius: 999px;
-      border: 1px solid rgba(94, 168, 108, 0.2);
-      background: rgba(94, 168, 108, 0.08);
-      color: #628e67;
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    .pulse-dot,
-    .status-dot,
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      flex-shrink: 0;
-    }
-
-    .pulse-dot {
-      background: var(--green);
-      box-shadow: 0 0 0 rgba(34, 197, 94, 0.55);
-      animation: pulse-green 1.8s infinite;
-    }
-
-    .hero h1 {
-      font-size: clamp(3.8rem, 6vw, 5.6rem);
-      line-height: 0.97;
-      letter-spacing: -0.05em;
-      font-weight: 600;
-      margin-bottom: 24px;
-    }
-
-    .hero h1 .accent {
-      color: var(--blue);
-    }
-
-    .hero-copy p {
-      max-width: 560px;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.8;
-      margin-bottom: 32px;
-    }
-
-    .hero-actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .hero-stats {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-top: 40px;
-      padding: 20px 24px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.55);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
-    }
-
-    .hero-stat {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      padding: 0 20px;
-    }
-
-    .hero-stat:first-child {
-      padding-left: 0;
-    }
-
-    .hero-stat-value {
-      font-size: 22px;
-      font-weight: 600;
-      letter-spacing: -0.04em;
-      color: var(--text);
-    }
-
-    .hero-stat-label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .hero-divider-v {
-      width: 1px;
-      height: 36px;
-      background: var(--border);
-      flex-shrink: 0;
-    }
-
-    .hero-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 20px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-      min-height: 56px;
-      padding: 0 22px;
-      border-radius: 12px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn-primary {
-      background: var(--blue);
-      border-color: rgba(68, 100, 141, 0.22);
-      color: #f8fbff;
-      box-shadow: 0 10px 18px rgba(68, 100, 141, 0.18);
-    }
-
-    .btn-primary:hover {
-      background: #3d5c82;
-    }
-
-    .btn-ghost {
-      background: rgba(255, 255, 255, 0.55);
-      border-color: var(--border-strong);
-      color: var(--muted);
-    }
-
-    .btn-ghost:hover {
-      color: var(--text);
-      border-color: rgba(28, 37, 56, 0.16);
-      background: rgba(255, 255, 255, 0.85);
-    }
-
-    .inference-card,
-    .stat-card,
-    .panel,
-    .theory-card,
-    .formula-block,
-    .cite-card {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface);
-      box-shadow: var(--shadow);
-    }
-
-    .inference-card {
-      padding: 14px;
-    }
-
-    .road-frame {
-      position: relative;
-      overflow: hidden;
-      border-radius: 14px;
-      aspect-ratio: 16 / 10;
-      border: 1px solid rgba(28, 37, 56, 0.08);
-      background: linear-gradient(180deg, #dfe7f0 0%, #cbd7e6 100%);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
-    }
-
-    .road-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .road-overlay {
-      position: absolute;
-      left: 16px;
-      bottom: 16px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(68, 100, 141, 0.68);
-      backdrop-filter: blur(10px);
-      color: #f7fbff;
-      font-size: 10px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-
-    .live-dot {
-      background: #dcecff;
-      box-shadow: 0 0 0 rgba(101, 132, 173, 0.36);
-      animation: pulse-blue 1.8s infinite;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .stat-card {
-      padding: 18px;
-      background: var(--surface-2);
-    }
-
-    .stat-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 600;
-      letter-spacing: -0.04em;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    .mini-badge {
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      border: 1px solid var(--border);
-      white-space: nowrap;
-    }
-
-    .mini-badge.blue {
-      color: var(--blue);
-      border-color: rgba(101, 132, 173, 0.18);
-      background: rgba(101, 132, 173, 0.08);
-    }
-
-    .mini-badge.green {
-      color: #628e67;
-      border-color: rgba(94, 168, 108, 0.2);
-      background: rgba(94, 168, 108, 0.08);
-    }
-
-    .track {
-      height: 6px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: rgba(68, 100, 141, 0.12);
-    }
-
-    .fill {
-      height: 100%;
-      border-radius: inherit;
-      background: var(--blue);
-    }
-
-    .fill.green {
-      background: var(--green);
-    }
-
-    .tech-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .tech-tag,
-    .filename-tag,
-    .panel-chip,
-    .tab-btn,
-    .placeholder,
-    .status-bar,
-    .section-kicker,
-    .formula-eq,
-    .step-badge,
-    .table-head,
-    .citation-meta {
-      font-family: var(--font-mono);
-    }
-
-    .tech-tag,
-    .filename-tag,
-    .panel-chip,
-    .tab-btn,
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 7px 11px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.55);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.04em;
-    }
-
-    .divider {
-      height: 1px;
-      background: rgba(28, 37, 56, 0.08);
-    }
-
-    .section-bridge {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 0 max(24px, calc((100vw - 1160px) / 2));
-      margin: 0;
-    }
-
-    .bridge-line {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .bridge-label {
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .studio {
-      padding: 36px 0 64px;
-    }
-
-    .section-kicker {
-      color: var(--blue);
-      font-size: 12px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .section-head {
-      margin-bottom: 24px;
-    }
-
-    .section-head h2 {
-      font-size: 32px;
-      font-weight: 600;
-      letter-spacing: -0.04em;
-      margin-bottom: 10px;
-    }
-
-    .section-head p {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.7;
-      max-width: 740px;
-    }
-
-    #file-input {
-      display: none;
-    }
-
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.55);
-    }
-
-    .filename-tag {
-      margin-left: auto;
-      min-height: 44px;
-      padding-inline: 14px;
-      color: var(--muted);
-      border-radius: 12px;
-    }
-
-    .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      min-height: 20px;
-      color: var(--muted);
-      font-size: 12px;
-      letter-spacing: 0.02em;
-      margin-bottom: 22px;
-    }
-
-    .status-dot {
-      background: rgba(68, 100, 141, 0.22);
-    }
-
-    .status-bar.loading .status-dot {
-      background: var(--amber);
-      animation: pulse-amber 1s infinite;
-    }
-
-    .status-bar.error {
-      color: #b55d5d;
-    }
-
-    .status-bar.error .status-dot {
-      background: var(--red);
-      animation: none;
-    }
-
-    .preview-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .panel {
-      overflow: hidden;
-      background: var(--surface);
-      box-shadow: none;
-    }
-
-    .panel-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.58);
-    }
-
-    .panel-title {
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: -0.02em;
-    }
-
-    .panel-chip {
-      padding: 6px 10px;
-      font-size: 10px;
-      text-transform: uppercase;
-    }
-
-    .chip-raw {
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.8);
-    }
-
-    .chip-binary {
-      color: #b68136;
-      border-color: rgba(195, 138, 62, 0.18);
-      background: rgba(195, 138, 62, 0.08);
-    }
-
-    .chip-instance {
-      color: #9b6176;
-      border-color: rgba(155, 97, 118, 0.18);
-      background: rgba(155, 97, 118, 0.08);
-    }
-
-    .image-frame {
-      position: relative;
-      min-height: 240px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(244, 241, 235, 0.95)),
-        #f2eee7;
-    }
-
-    .image-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: none;
-      background: #f8f5ef;
-    }
-
-    .image-frame img.visible {
-      display: block;
-      animation: fade-in 0.25s ease;
-    }
-
-    .placeholder {
-      padding: 28px;
-      color: #a08f80;
-      text-align: center;
-      font-size: 12px;
-      line-height: 1.9;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .spinner {
-      position: absolute;
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      border: 2px solid rgba(68, 100, 141, 0.12);
-      border-top-color: var(--blue);
-      display: none;
-      animation: spin 0.8s linear infinite;
-    }
-
-    .spinner.visible {
-      display: block;
-    }
-
-    .overlay-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 90;
-      background: rgba(79, 74, 68, 0.28);
-      backdrop-filter: blur(4px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.24s ease;
-    }
-
-    .overlay-backdrop.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .theory-panel {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 100;
-      width: min(600px, 100vw);
-      display: flex;
-      flex-direction: column;
-      background: #f8f5ef;
-      border-left: 1px solid var(--border);
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      box-shadow: -24px 0 60px rgba(56, 69, 91, 0.12);
-    }
-
-    .theory-panel.open {
-      transform: translateX(0);
-    }
-
-    .tp-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 24px 24px 18px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(248, 245, 239, 0.96);
-    }
-
-    .tp-eyebrow {
-      margin-bottom: 8px;
-      color: var(--blue);
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    .tp-title {
-      font-size: 28px;
-      font-weight: 600;
-      letter-spacing: -0.04em;
-    }
-
-    .tp-close {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.66);
-      color: var(--muted);
-      cursor: pointer;
-      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .tp-close:hover {
-      color: var(--text);
-      border-color: rgba(28, 37, 56, 0.18);
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .tp-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 18px 24px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.48);
-    }
-
-    .tab-btn {
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-transform: none;
-    }
-
-    .tab-btn:hover {
-      color: var(--text);
-      border-color: rgba(28, 37, 56, 0.16);
-    }
-
-    .tab-btn.active {
-      color: var(--blue);
-      border-color: rgba(101, 132, 173, 0.24);
-      background: rgba(101, 132, 173, 0.1);
-    }
-
-    .tp-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px;
-    }
-
-    .tp-body::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .tp-body::-webkit-scrollbar-thumb {
-      background: rgba(28, 37, 56, 0.12);
-      border-radius: 999px;
-    }
-
-    .tab-pane {
-      display: none;
-    }
-
-    .tab-pane.active {
-      display: block;
-      animation: fade-in 0.25s ease;
-    }
-
-    .content-title {
-      font-size: 24px;
-      font-weight: 600;
-      letter-spacing: -0.04em;
-      margin-bottom: 8px;
-    }
-
-    .content-subtitle {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-      margin-bottom: 20px;
-    }
-
-    .content-copy {
-      color: #566170;
-      font-size: 14px;
-      line-height: 1.8;
-      margin-bottom: 16px;
-    }
-
-    .content-copy strong {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .content-copy code,
-    .step-copy code {
-      padding: 2px 5px;
-      border-radius: 6px;
-      background: rgba(59, 130, 246, 0.1);
-      color: var(--blue);
-      font-size: 12px;
-      font-family: var(--font-mono);
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      margin: 20px 0;
-    }
-
-    .card-grid.wide {
-      grid-template-columns: 1fr;
-    }
-
-    .theory-card {
-      padding: 16px;
-      background: var(--surface-2);
-      box-shadow: none;
-    }
-
-    .theory-card h4 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      letter-spacing: -0.02em;
-    }
-
-    .theory-card p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.75;
-    }
-
-    .chip {
-      margin-top: 12px;
-      width: fit-content;
-    }
-
-    .chip.blue {
-      color: var(--blue);
-      border-color: rgba(101, 132, 173, 0.18);
-      background: rgba(101, 132, 173, 0.08);
-    }
-
-    .chip.amber {
-      color: #b68136;
-      border-color: rgba(195, 138, 62, 0.18);
-      background: rgba(195, 138, 62, 0.08);
-    }
-
-    .formula-block {
-      padding: 16px;
-      margin-bottom: 14px;
-      background: var(--surface-2);
-      box-shadow: none;
-      border-left: 3px solid var(--blue);
-    }
-
-    .formula-block.amber {
-      border-left-color: var(--amber);
-    }
-
-    .formula-name {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .formula-eq {
-      color: var(--blue);
-      font-size: 12px;
-      line-height: 1.8;
-      margin-bottom: 8px;
-    }
-
-    .formula-block.amber .formula-eq {
-      color: #b68136;
-    }
-
-    .formula-desc {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.75;
-    }
-
-    .steps {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .step {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .step:last-child {
-      border-bottom: 0;
-    }
-
-    .step-badge {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-      background: rgba(101, 132, 173, 0.12);
-      border: 1px solid rgba(101, 132, 173, 0.24);
-      color: var(--blue);
-      font-size: 12px;
-    }
-
-    .step-title {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .step-copy {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.8;
-    }
-
-    .metrics-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 18px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-    }
-
-    .metrics-table th,
-    .metrics-table td {
-      padding: 13px 14px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .metrics-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .metrics-table th {
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      background: rgba(255, 255, 255, 0.58);
-      font-family: var(--font-mono);
-    }
-
-    .metrics-table td {
-      font-size: 13px;
-      color: #596474;
-      background: rgba(255, 255, 255, 0.42);
-    }
-
-    .val-blue {
-      color: var(--blue);
-      font-weight: 600;
-    }
-
-    .cite-card {
-      display: flex;
-      gap: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-      background: var(--surface-2);
-      box-shadow: none;
-      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .cite-card:hover {
-      transform: translateY(-1px);
-      border-color: rgba(96, 165, 250, 0.18);
-      background: rgba(59, 130, 246, 0.05);
-    }
-
-    .citation-index {
-      color: var(--blue);
-      font-size: 12px;
-      flex-shrink: 0;
-      margin-top: 2px;
-      font-family: var(--font-mono);
-    }
-
-    .citation-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .citation-meta {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .page-shell::after {
-      content: "";
-      display: block;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(101,132,173,0.18), transparent);
-      margin-top: 40px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    @keyframes fade-in {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-
-    @keyframes pulse-green {
-      0%, 100% {
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45);
-      }
-      50% {
-        box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
-      }
-    }
-
-    @keyframes pulse-blue {
-      0%, 100% {
-        box-shadow: 0 0 0 0 rgba(101, 132, 173, 0.35);
-      }
-      50% {
-        box-shadow: 0 0 0 9px rgba(101, 132, 173, 0);
-      }
-    }
-
-    @keyframes pulse-amber {
-      0%, 100% {
-        opacity: 1;
-        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35);
-      }
-      50% {
-        opacity: 0.4;
-        box-shadow: 0 0 0 7px rgba(245, 158, 11, 0);
-      }
-    }
-
-    @media (max-width: 980px) {
-      .site-nav .container {
-        justify-content: space-between;
-      }
-
-      .hero-grid {
-        grid-template-columns: 1fr;
-        gap: 32px;
-      }
-    }
-
-    @media (max-width: 820px) {
-      .hero {
-        padding: 64px 0 56px;
-      }
-
-      .hero-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-visual {
-        display: none;
-      }
-
-      .hero-stats {
-        flex-wrap: wrap;
-        gap: 16px;
-        padding: 16px;
-      }
-
-      .hero-divider-v {
-        display: none;
-      }
-
-      .hero-stat {
-        flex: 1 1 40%;
-        padding: 0;
-      }
-
-      .preview-grid,
-      .card-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .theory-panel {
-        width: 100vw;
-      }
-    }
-
-    @media (max-width: 680px) {
-      body {
-        padding-top: 86px;
-      }
-
-      .site-nav {
-        height: auto;
-        padding: 10px 0;
-      }
-
-      .site-nav .container {
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .brand-text {
-        font-size: 16px;
-      }
-
-      .controls {
-        align-items: stretch;
-      }
-
-      .controls .btn,
-      .filename-tag {
-        width: 100%;
-      }
-
-      .filename-tag {
-        margin-left: 0;
-        justify-content: flex-start;
-      }
-
-      .tp-header,
-      .tp-tabs,
-      .tp-body {
-        padding-inline: 18px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="page-shell">
-    <header class="site-nav">
-      <div class="container">
-        <a class="brand" href="#home" aria-label="Lane Detection Studio home">
-          <span class="brand-mark" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12h2l2.2-4.5L11 17l2.6-7 2.2 4H21"></path>
-            </svg>
-          </span>
-          <span class="brand-text">Lane Detection Studio</span>
-        </a>
-
-        <nav class="nav-links" aria-label="Primary">
-          <button class="nav-link" type="button" id="openTheoryNav">Theory</button>
-          <a class="nav-link" href="https://github.com/Siddh-456/Lane-Detection" target="_blank" rel="noopener">GitHub</a>
-          <a class="btn btn-primary" href="#studio" style="min-height:40px; padding: 0 18px; font-size:14px; border-radius:10px;">Launch Studio</a>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>See Lane — Lane Detection Studio</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --dm-red: #c41028;
+                --dm-bone: #c8bfa8;
+                --dm-bone-light: #d4ccba;
+                --dm-gold: #8a7652;
+                --dm-black: #1a1a1a;
+                --dm-white: #e8e0d0;
+                --dm-gray: #5a5245;
+                --dm-border: rgba(26, 26, 26, 0.12);
+
+                --font-brand: "Bebas Neue", sans-serif;
+                --font-body: "Outfit", sans-serif;
+                --font-mono: "JetBrains Mono", monospace;
+
+                --radius-sm: 8px;
+                --radius-md: 16px;
+                --radius-lg: 40px;
+
+                --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html {
+                scroll-behavior: smooth;
+            }
+
+            body {
+                background: var(--dm-bone);
+                background-image: url("parchment_bg.png");
+                background-size: cover;
+                background-attachment: fixed;
+                background-position: center;
+                color: var(--dm-black);
+                font-family: var(--font-body);
+                min-height: 100vh;
+                overflow-x: hidden;
+                line-height: 1.5;
+            }
+
+            /* Vignette overlay to match logo aesthetic */
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                background: radial-gradient(
+                    ellipse at center,
+                    transparent 40%,
+                    rgba(0, 0, 0, 0.25) 100%
+                );
+                pointer-events: none;
+            }
+
+            /* TRANSITION */
+            .page-loader {
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                background: var(--dm-red);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+            }
+            .page-loader.ready {
+                transform: translateY(-100%);
+            }
+
+            .loader-text {
+                font-family: var(--font-brand);
+                font-size: 8vw;
+                color: var(--dm-bone);
+                letter-spacing: -0.02em;
+                opacity: 0;
+                transform: translateY(20px);
+                animation: loaderFade 0.6s ease forwards 0.2s;
+            }
+            @keyframes loaderFade {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .bg-graph {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0.3;
+            }
+
+            /* NAV */
+            nav {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                align-items: center;
+                padding: 32px 48px;
+            }
+
+            .nav-brand {
+                font-family: var(--font-brand);
+                font-size: 48px;
+                font-weight: 400;
+                color: var(--dm-red);
+                text-transform: uppercase;
+                letter-spacing: -0.01em;
+                line-height: 0.9;
+                text-align: center;
+                grid-column: 2;
+            }
+
+            /* Animated lanes canvas */
+            #lanes-canvas {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0.3;
+                mix-blend-mode: multiply;
+            }
+
+            .nav-left {
+                display: flex;
+                align-items: center;
+                gap: 32px;
+                grid-column: 1;
+            }
+            .nav-right {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 32px;
+                grid-column: 3;
+            }
+
+            .nav-link {
+                font-family: var(--font-brand);
+                font-size: 16px;
+                text-transform: uppercase;
+                color: var(--dm-black);
+                text-decoration: none;
+                position: relative;
+                letter-spacing: 0.05em;
+                transition: var(--transition);
+            }
+            .nav-link:hover {
+                color: var(--dm-red);
+            }
+            .nav-link::after {
+                content: "";
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 0;
+                height: 1.5px;
+                background: var(--dm-red);
+                transition: var(--transition);
+            }
+            .nav-link:hover::after {
+                width: 100%;
+            }
+
+            .btn-theory-trigger {
+                font-family: var(--font-brand);
+                font-size: 16px;
+                text-transform: uppercase;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                color: var(--dm-black);
+                letter-spacing: 0.05em;
+                transition: var(--transition);
+            }
+            .btn-theory-trigger:hover {
+                color: var(--dm-red);
+            }
+
+            /* HERO */
+            .hero {
+                position: relative;
+                z-index: 1;
+                text-align: center;
+                padding: 180px 48px 100px;
+            }
+
+            .hero-eyebrow {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                letter-spacing: 0.3em;
+                text-transform: uppercase;
+                color: var(--dm-gold);
+                margin-bottom: 32px;
+            }
+
+            h1 {
+                font-family: var(--font-brand);
+                font-size: clamp(6rem, 15vw, 18rem);
+                font-weight: 400;
+                line-height: 0.85;
+                letter-spacing: -0.04em;
+                color: var(--dm-red);
+                margin-bottom: 40px;
+                text-transform: uppercase;
+            }
+
+            h1 span {
+                display: block;
+                color: var(--dm-black);
+            }
+
+            .hero-desc {
+                font-family: var(--font-body);
+                font-size: 20px;
+                line-height: 1.6;
+                color: var(--dm-gray);
+                max-width: 600px;
+                margin: 0 auto 64px;
+                font-weight: 300;
+            }
+
+            .hero-badges {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 16px;
+            }
+
+            .badge {
+                font-family: var(--font-brand);
+                font-size: 14px;
+                letter-spacing: 0.1em;
+                padding: 8px 20px;
+                border-radius: 999px;
+                border: 1px solid var(--dm-border);
+                color: var(--dm-black);
+                background: var(--dm-white);
+                text-transform: uppercase;
+            }
+
+            /* TOOL */
+            .tool-wrap {
+                position: relative;
+                z-index: 1;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 64px 48px;
+            }
+
+            .controls {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 24px;
+                flex-wrap: wrap;
+                margin-bottom: 48px;
+            }
+
+            #file-input {
+                display: none;
+            }
+
+            .btn-upload {
+                display: inline-flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 32px;
+                border: 1.5px solid var(--dm-border);
+                border-radius: var(--radius-lg);
+                background: var(--dm-white);
+                color: var(--dm-black);
+                font-family: var(--font-brand);
+                font-size: 18px;
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+
+            .btn-upload:hover {
+                border-color: var(--dm-red);
+                color: var(--dm-red);
+            }
+
+            .btn-run {
+                display: inline-flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 48px;
+                border: none;
+                border-radius: var(--radius-lg);
+                background: var(--dm-red);
+                color: var(--dm-bone);
+                font-family: var(--font-brand);
+                font-size: 18px;
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: var(--transition);
+                letter-spacing: 0.02em;
+            }
+
+            .btn-run:hover:not(:disabled) {
+                background: var(--dm-black);
+                transform: scale(1.02);
+            }
+
+            .btn-run:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+
+            .filename-tag {
+                font-family: var(--font-mono);
+                font-size: 12px;
+                color: var(--dm-gray);
+                padding: 8px 16px;
+                border-radius: var(--radius-sm);
+                background: rgba(255, 255, 255, 0.4);
+            }
+
+            .preview-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 32px;
+            }
+
+            .panel {
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                background: var(--dm-white);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+                transition: var(--transition);
+                border: 1px solid var(--dm-border);
+            }
+
+            .panel:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 40px 100px rgba(0, 0, 0, 0.15);
+            }
+
+            .panel-head {
+                padding: 16px 18px 14px;
+                border-bottom: 1px solid var(--dm-border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: rgba(200, 191, 168, 0.4);
+            }
+
+            .panel-title {
+                font-family: var(--font-brand);
+                font-size: 18px;
+                font-weight: 400;
+                color: var(--dm-black);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .panel-chip {
+                font-family: var(--font-mono);
+                font-size: 9px;
+                letter-spacing: 0.1em;
+                padding: 3px 9px;
+                border-radius: 3px;
+            }
+
+            .chip-raw {
+                background: rgba(26, 26, 26, 0.08);
+                color: var(--dm-gray);
+                border: 1px solid var(--dm-border);
+            }
+            .chip-binary {
+                background: rgba(196, 16, 40, 0.1);
+                color: var(--dm-red);
+                border: 1px solid rgba(196, 16, 40, 0.25);
+            }
+            .chip-instance {
+                background: rgba(138, 118, 82, 0.12);
+                color: var(--dm-gold);
+                border: 1px solid rgba(138, 118, 82, 0.3);
+            }
+
+            .image-frame {
+                position: relative;
+                min-height: 280px;
+                display: grid;
+                place-items: center;
+                background: var(--dm-bone-light);
+                overflow: hidden;
+            }
+
+            .image-frame img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: none;
+                background: var(--dm-bone-light);
+            }
+            .image-frame img.visible {
+                display: block;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .overlay-img {
+                display: block !important;
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                z-index: 2;
+                background: transparent !important;
+            }
+            .overlay-img.active {
+                opacity: 0.5;
+            }
+
+            .toggle-overlay {
+                font-family: var(--font-mono);
+                font-size: 10px;
+                letter-spacing: 0.05em;
+                padding: 4px 12px;
+                border-radius: 999px;
+                cursor: pointer;
+                border: 1.5px solid var(--dm-border);
+                background: transparent;
+                color: var(--dm-gray);
+                transition: var(--transition);
+                text-transform: uppercase;
+            }
+            .toggle-overlay:hover {
+                border-color: var(--dm-red);
+                color: var(--dm-red);
+            }
+            .toggle-overlay.on {
+                background: var(--dm-red);
+                color: var(--dm-white);
+                border-color: var(--dm-red);
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            .ph {
+                font-family: var(--font-body);
+                font-size: 13px;
+                color: var(--dm-gray);
+                text-align: center;
+                padding: 24px;
+                line-height: 1.8;
+                font-style: italic;
+            }
+
+            .spinner {
+                width: 38px;
+                height: 38px;
+                border: 2px solid rgba(196, 16, 40, 0.2);
+                border-top-color: var(--dm-red);
+                border-radius: 50%;
+                animation: spin 0.85s linear infinite;
+                display: none;
+            }
+
+            .spinner.visible {
+                display: block;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* THEORY OVERLAY */
+            .overlay-backdrop {
+                position: fixed;
+                inset: 0;
+                z-index: 10000;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(8px);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.5s ease;
+            }
+
+            .overlay-backdrop.open {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .theory-panel {
+                position: fixed;
+                inset: 0;
+                z-index: 10001;
+                background: var(--dm-white);
+                display: flex;
+                flex-direction: column;
+                transform: translateY(100%);
+                transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+                overflow: hidden;
+            }
+
+            .theory-panel.open {
+                transform: translateY(0);
+            }
+
+            .tp-header {
+                padding: 48px;
+                border-bottom: 1.5px solid var(--dm-red);
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                flex-shrink: 0;
+            }
+
+            .tp-brand {
+                font-family: var(--font-brand);
+                font-size: 80px;
+                color: var(--dm-red);
+                line-height: 0.8;
+                text-transform: uppercase;
+            }
+
+            .tp-close {
+                font-family: var(--font-brand);
+                font-size: 24px;
+                color: var(--dm-black);
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                transition: var(--transition);
+            }
+            .tp-close:hover {
+                color: var(--dm-red);
+            }
+
+            .tp-tabs {
+                display: flex;
+                gap: 40px;
+                padding: 0 48px;
+                height: 64px;
+                border-bottom: 1px solid var(--dm-border);
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            .tab-btn {
+                font-family: var(--font-brand);
+                font-size: 16px;
+                text-transform: uppercase;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                color: var(--dm-gray);
+                letter-spacing: 0.05em;
+                transition: var(--transition);
+                position: relative;
+            }
+            .tab-btn:hover {
+                color: var(--dm-red);
+            }
+            .tab-btn.active {
+                color: var(--dm-red);
+            }
+            .tab-btn.active::after {
+                content: "";
+                position: absolute;
+                bottom: -20px;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background: var(--dm-red);
+            }
+
+            .tp-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: 64px 48px;
+                display: grid;
+                grid-template-columns: 300px 1fr;
+                gap: 80px;
+            }
+
+            .tc-sidebar {
+                position: sticky;
+                top: 0;
+            }
+            .tc-content {
+                max-width: 800px;
+            }
+
+            .tc-h2 {
+                font-family: var(--font-brand);
+                font-size: 64px;
+                color: var(--dm-black);
+                line-height: 0.9;
+                margin-bottom: 24px;
+                text-transform: uppercase;
+            }
+            .tc-sub {
+                font-family: var(--font-body);
+                font-size: 18px;
+                color: var(--dm-red);
+                margin-bottom: 40px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+            }
+
+            .tc-p {
+                font-family: var(--font-body);
+                font-size: 16px;
+                line-height: 1.7;
+                color: var(--dm-black);
+                margin-bottom: 24px;
+                font-weight: 300;
+            }
+            .tc-p strong {
+                font-weight: 600;
+                color: var(--dm-red);
+            }
+
+            .card-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 24px;
+                margin-bottom: 40px;
+            }
+
+            .tc-card {
+                padding: 32px;
+                border-radius: var(--radius-md);
+                background: var(--dm-bone);
+                border: 1.5px solid var(--dm-border);
+                transition: var(--transition);
+            }
+            .tc-card:hover {
+                border-color: var(--dm-red);
+            }
+
+            .tc-card-title {
+                font-family: var(--font-brand);
+                font-size: 24px;
+                color: var(--dm-red);
+                margin-bottom: 8px;
+                text-transform: uppercase;
+            }
+            .tc-card-body {
+                font-family: var(--font-body);
+                font-size: 14px;
+                color: var(--dm-gray);
+                line-height: 1.6;
+            }
+
+            .tc-tag {
+                display: inline-block;
+                margin-top: 8px;
+                font-family: var(--mono);
+                font-size: 9px;
+                letter-spacing: 0.08em;
+                padding: 3px 9px;
+                border-radius: 3px;
+                background: rgba(184, 134, 11, 0.12);
+                color: var(--gold);
+                border: 1px solid rgba(184, 134, 11, 0.25);
+            }
+
+            .tc-tag.red {
+                background: rgba(122, 31, 46, 0.1);
+                color: var(--burgundy);
+                border-color: rgba(122, 31, 46, 0.25);
+            }
+
+            .formula-block {
+                background: rgba(255, 255, 255, 0.7);
+                border: 1px solid var(--border);
+                border-left: 3px solid var(--gold);
+                border-radius: 8px;
+                padding: 14px 18px;
+                margin-bottom: 14px;
+            }
+
+            .formula-block.red {
+                border-left-color: var(--burgundy);
+            }
+
+            .formula-name {
+                font-family: var(--serif);
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--text);
+                margin-bottom: 5px;
+            }
+            .formula-eq {
+                font-family: var(--mono);
+                font-size: 12px;
+                color: var(--gold);
+                margin-bottom: 7px;
+            }
+            .formula-block.red .formula-eq {
+                color: var(--burgundy);
+            }
+            .formula-desc {
+                font-family: var(--body);
+                font-size: 12.5px;
+                color: var(--muted);
+                line-height: 1.7;
+            }
+            .formula-desc strong {
+                color: var(--text2);
+            }
+
+            .steps {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .step {
+                display: flex;
+                gap: 16px;
+                align-items: flex-start;
+                padding: 14px 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .step:last-child {
+                border-bottom: none;
+            }
+
+            .step-num {
+                flex-shrink: 0;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                border: 1.5px solid var(--burgundy);
+                display: grid;
+                place-items: center;
+                font-family: var(--mono);
+                font-size: 11px;
+                font-weight: 500;
+                color: var(--burgundy);
+                margin-top: 1px;
+            }
+
+            .step-title {
+                font-family: var(--serif);
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--text);
+                margin-bottom: 3px;
+            }
+            .step-desc {
+                font-family: var(--body);
+                font-size: 12.5px;
+                color: var(--muted);
+                line-height: 1.7;
+            }
+            .step-desc code {
+                font-family: var(--mono);
+                font-size: 11px;
+                background: rgba(122, 31, 46, 0.08);
+                padding: 1px 4px;
+                border-radius: 3px;
+            }
+
+            .metrics-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+
+            .metrics-table th {
+                font-family: var(--mono);
+                font-size: 10px;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--muted);
+                padding: 10px 12px;
+                text-align: left;
+                border-bottom: 1px solid var(--border2);
+                background: rgba(255, 255, 255, 0.5);
+            }
+
+            .metrics-table td {
+                font-family: var(--body);
+                font-size: 13px;
+                color: var(--text2);
+                padding: 11px 12px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .metrics-table tr:hover td {
+                background: rgba(255, 255, 255, 0.5);
+            }
+            .val-green {
+                color: #1a7a4a;
+                font-weight: 600;
+            }
+
+            .cite-link {
+                display: flex;
+                align-items: flex-start;
+                gap: 14px;
+                padding: 14px 16px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.5);
+                margin-bottom: 12px;
+                text-decoration: none;
+                transition:
+                    border-color 0.2s,
+                    background 0.2s;
+            }
+
+            .cite-link:hover {
+                border-color: var(--burgundy);
+                background: rgba(122, 31, 46, 0.04);
+            }
+
+            .cite-num {
+                flex-shrink: 0;
+                font-family: var(--mono);
+                font-size: 11px;
+                color: var(--gold);
+                margin-top: 2px;
+            }
+            .cite-title {
+                font-family: var(--serif);
+                font-size: 13.5px;
+                font-weight: 700;
+                color: var(--burgundy);
+                margin-bottom: 3px;
+            }
+            .cite-meta {
+                font-family: var(--body);
+                font-size: 12px;
+                color: var(--muted);
+                font-style: italic;
+            }
+
+            .divider {
+                height: 1px;
+                background: var(--border);
+                margin: 22px 0;
+            }
+
+            /* STATUS BAR */
+            .status-bar {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-family: var(--font-mono);
+                font-size: 12px;
+                color: var(--dm-gray);
+                letter-spacing: 0.05em;
+                margin-bottom: 40px;
+                padding: 12px 20px;
+                border-radius: var(--radius-sm);
+                background: rgba(255, 255, 255, 0.35);
+                border: 1px solid var(--dm-border);
+            }
+            .status-bar.loading {
+                color: var(--dm-gold);
+                border-color: rgba(138, 118, 82, 0.3);
+            }
+            .status-bar.error {
+                color: var(--dm-red);
+                border-color: rgba(196, 16, 40, 0.25);
+            }
+            .sdot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                background: var(--dm-gray);
+            }
+            .status-bar.loading .sdot {
+                background: var(--dm-gold);
+                animation: pulse 1.2s ease infinite;
+            }
+            .status-bar.error .sdot {
+                background: var(--dm-red);
+            }
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.3;
+                }
+            }
+
+            /* RESPONSIVE */
+            @media (max-width: 768px) {
+                nav {
+                    padding: 0 20px;
+                }
+                .hero {
+                    padding: 48px 20px 40px;
+                }
+                .tool-wrap {
+                    padding: 32px 20px 48px;
+                }
+                .preview-grid {
+                    grid-template-columns: 1fr;
+                }
+                .card-grid {
+                    grid-template-columns: 1fr;
+                }
+                .theory-panel {
+                    width: 100vw;
+                }
+                .tp-body {
+                    padding: 20px;
+                }
+                .tp-tabs {
+                    padding: 12px 20px;
+                }
+                .tp-header {
+                    padding: 20px;
+                }
+            }
+
+            /* ── MODE SELECTOR ─────────────────────────────────────────── */
+            .mode-selector {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                margin-bottom: 40px;
+            }
+            .btn-mode {
+                font-family: var(--font-brand);
+                font-size: 16px;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                padding: 10px 28px;
+                border-radius: 999px;
+                border: 1.5px solid var(--dm-border);
+                background: transparent;
+                color: var(--dm-gray);
+                cursor: pointer;
+                transition: var(--transition);
+            }
+            .btn-mode:hover {
+                color: var(--dm-black);
+                border-color: var(--dm-black);
+            }
+            .btn-mode.active {
+                background: var(--dm-red);
+                color: var(--dm-bone);
+                border-color: var(--dm-red);
+            }
+
+            /* ── VIDEO MODE ────────────────────────────────────────────── */
+            .video-controls {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 24px;
+                flex-wrap: wrap;
+                margin-bottom: 48px;
+            }
+            #video-file-input {
+                display: none;
+            }
+            .video-panel {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .video-panel video {
+                width: 100%;
+                border-radius: var(--radius-sm);
+                background: #111;
+                max-height: 240px;
+            }
+            .btn-download {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                padding: 6px 16px;
+                border-radius: 999px;
+                border: 1px solid var(--dm-border);
+                background: transparent;
+                color: var(--dm-gray);
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-block;
+                transition: var(--transition);
+            }
+            .btn-download:hover {
+                color: var(--dm-red);
+                border-color: var(--dm-red);
+            }
+
+            /* ── LIVE MODE ─────────────────────────────────────────────── */
+            .live-controls {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                margin-bottom: 48px;
+            }
+            .btn-live {
+                font-family: var(--font-brand);
+                font-size: 15px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                padding: 10px 28px;
+                border-radius: 999px;
+                border: 1.5px solid;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+            .btn-start {
+                background: var(--dm-red);
+                color: var(--dm-bone);
+                border-color: var(--dm-red);
+            }
+            .btn-start:hover {
+                opacity: 0.85;
+            }
+            .btn-stop {
+                background: transparent;
+                color: var(--dm-gray);
+                border-color: var(--dm-border);
+            }
+            .btn-stop:hover {
+                color: var(--dm-black);
+                border-color: var(--dm-black);
+            }
+            .btn-stop:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            .fps-badge {
+                font-family: var(--font-mono);
+                font-size: 12px;
+                color: var(--dm-gold);
+                letter-spacing: 0.1em;
+                padding: 6px 14px;
+                border: 1px solid var(--dm-border);
+                border-radius: 999px;
+            }
+            .live-video-frame {
+                width: 100%;
+                border-radius: var(--radius-sm);
+                background: #111;
+            }
+        </style>
+    </head>
+    <body
+        onload="document.querySelector('.page-loader').classList.add('ready')"
+    >
+        <div class="page-loader">
+            <div class="loader-text">see lane</div>
+        </div>
+
+        <canvas id="lanes-canvas"></canvas>
+
+        <!-- NAVBAR -->
+        <nav
+            style="
+                display: flex;
+                justify-content: flex-end;
+                gap: 32px;
+                padding: 32px 48px;
+            "
+        >
+            <a href="#" class="nav-link">Studio</a>
+            <a href="#" class="nav-link">Project</a>
+            <button class="btn-theory-trigger" id="openTheory">
+                Methodology
+            </button>
+            <a href="#" class="nav-link">Contact</a>
         </nav>
-      </div>
-    </header>
 
-    <main>
-      <section class="hero" id="home">
-        <div class="container hero-grid">
-          <div class="hero-copy">
-            <div class="eyebrow-pill mono">
-              <span class="pulse-dot" aria-hidden="true"></span>
-              COMPUTER VISION PIPELINE V2.4
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-eyebrow">
+                Deep Learning · Autonomous Driving · Instance Segmentation
+            </div>
+            <h1>see<span>lane</span></h1>
+            <p class="hero-desc">
+                Experience the future of computer vision. A high-performance
+                lane detection pipeline delivering surgical precision in
+                real-time environments.
+            </p>
+            <div class="hero-badges">
+                <span class="badge">PyTorch 1.2+</span>
+                <span class="badge">Flask API</span>
+                <span class="badge">ENet Backbone</span>
+                <span class="badge">TuSimple Dataset</span>
+                <span class="badge">Docker Ready</span>
+            </div>
+        </section>
+
+        <!-- TOOL -->
+        <main class="tool-wrap">
+            <!-- MODE SELECTOR -->
+            <div class="mode-selector">
+                <button class="btn-mode active" data-mode="photo">Photo</button>
+                <button class="btn-mode" data-mode="video">Video</button>
+                <button class="btn-mode" data-mode="live">Live</button>
             </div>
 
-            <h1>Next-Gen Lane <span class="accent">Detection</span> Analysis</h1>
-            <p>Real-time LaneNet semantic segmentation for autonomous systems. Optimised for edge deployment with sub-20ms latency.</p>
+            <!-- ── PHOTO CONTROLS ──────────────────────────────────────── -->
+            <div id="photo-controls">
+                <form id="upload-form">
+                    <div class="controls">
+                        <input
+                            id="file-input"
+                            name="image"
+                            type="file"
+                            accept="image/*"
+                        />
+                        <label for="file-input" class="btn-upload">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            Choose Image
+                        </label>
+                        <button type="submit" class="btn-run" id="run-button">
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                            >
+                                <polygon points="5 3 19 12 5 21 5 3" />
+                            </svg>
+                            Run Detection
+                        </button>
+                        <span class="filename-tag" id="filename"
+                            >No file selected</span
+                        >
+                    </div>
+                </form>
 
-            <div class="hero-actions"></div>
+                <div class="status-bar" id="status-bar">
+                    <span class="sdot"></span>
+                    <span id="status-text">Select an image to begin.</span>
+                </div>
 
-            <div class="hero-stats">
-              <div class="hero-stat">
-                <span class="hero-stat-value">98.4%</span>
-                <span class="hero-stat-label">Binary Accuracy</span>
-              </div>
-              <div class="hero-divider-v"></div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">18ms</span>
-                <span class="hero-stat-label">Inference Latency</span>
-              </div>
-              <div class="hero-divider-v"></div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">3M</span>
-                <span class="hero-stat-label">ENet Parameters</span>
-              </div>
-              <div class="hero-divider-v"></div>
-              <div class="hero-stat">
-                <span class="hero-stat-value">512×256</span>
-                <span class="hero-stat-label">Input Resolution</span>
-              </div>
+                <div class="preview-grid" id="photo-grid">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Uploaded Image</span>
+                            <span class="panel-chip chip-raw">RAW</span>
+                        </div>
+                        <div class="image-frame">
+                            <img id="input-preview" alt="Uploaded image" />
+                            <div class="ph" id="ph-input">
+                                Your selected image<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel" id="binary-panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Binary Segmentation</span>
+                            <div
+                                style="
+                                    display: flex;
+                                    gap: 8px;
+                                    align-items: center;
+                                "
+                            >
+                                <button
+                                    class="toggle-overlay"
+                                    id="toggle-binary"
+                                    title="Toggle original image overlay"
+                                >
+                                    Overlay
+                                </button>
+                                <span class="panel-chip chip-binary"
+                                    >FOCAL LOSS</span
+                                >
+                            </div>
+                        </div>
+                        <div class="image-frame">
+                            <img
+                                id="binary-preview"
+                                alt="Binary segmentation"
+                            />
+                            <img
+                                class="overlay-img"
+                                id="binary-overlay"
+                                alt="Original overlay"
+                            />
+                            <div class="spinner" id="spinner"></div>
+                            <div class="ph" id="ph-binary">
+                                Binary lane mask<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel" id="instance-panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Instance Segmentation</span
+                            >
+                            <div
+                                style="
+                                    display: flex;
+                                    gap: 8px;
+                                    align-items: center;
+                                "
+                            >
+                                <button
+                                    class="toggle-overlay"
+                                    id="toggle-instance"
+                                    title="Toggle original image overlay"
+                                >
+                                    Overlay
+                                </button>
+                                <span class="panel-chip chip-instance"
+                                    >DISC. LOSS</span
+                                >
+                            </div>
+                        </div>
+                        <div class="image-frame">
+                            <img
+                                id="instance-preview"
+                                alt="Instance segmentation"
+                            />
+                            <img
+                                class="overlay-img"
+                                id="instance-overlay"
+                                alt="Original overlay"
+                            />
+                            <div class="spinner" id="spinner-instance"></div>
+                            <div class="ph" id="ph-instance">
+                                Instance segmentation<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="hero-tags">
-              <span class="tech-tag">PyTorch</span>
-              <span class="tech-tag">Flask API</span>
-              <span class="tech-tag">OpenCV</span>
-              <span class="tech-tag">ENet</span>
-              <span class="tech-tag">TuSimple</span>
-              <span class="tech-tag">Docker</span>
+            <!-- ── VIDEO CONTROLS ─────────────────────────────────────── -->
+            <div id="video-controls" style="display: none">
+                <div class="video-controls">
+                    <input
+                        id="video-file-input"
+                        name="video"
+                        type="file"
+                        accept=".mp4,.avi,.mov,.mkv"
+                    />
+                    <label for="video-file-input" class="btn-upload">
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        Choose Video
+                    </label>
+                    <button class="btn-run" id="video-run-button" disabled>
+                        <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                        >
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                        Process Video
+                    </button>
+                    <span class="filename-tag" id="video-filename"
+                        >No file selected</span
+                    >
+                </div>
+
+                <div class="status-bar" id="video-status-bar">
+                    <span class="sdot"></span>
+                    <span id="video-status-text"
+                        >Select a video file to begin.</span
+                    >
+                </div>
+
+                <div class="preview-grid" id="video-grid">
+                    <div class="panel video-panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Original Video</span>
+                            <span class="panel-chip chip-raw">RAW</span>
+                        </div>
+                        <div
+                            class="image-frame"
+                            style="height: auto; padding: 12px"
+                        >
+                            <video
+                                id="raw-video"
+                                controls
+                                style="
+                                    display: none;
+                                    width: 100%;
+                                    border-radius: var(--radius-sm);
+                                "
+                            ></video>
+                            <div class="ph" id="ph-raw-video">
+                                Uploaded video<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel video-panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Binary Segmentation Video</span
+                            >
+                            <span class="panel-chip chip-binary"
+                                >FOCAL LOSS</span
+                            >
+                        </div>
+                        <div
+                            class="image-frame"
+                            style="height: auto; padding: 12px"
+                        >
+                            <video
+                                id="binary-video"
+                                controls
+                                style="display: none"
+                            ></video>
+                            <div class="ph" id="ph-binary-video">
+                                Binary output video<br />will appear here.
+                            </div>
+                            <div
+                                class="spinner"
+                                id="video-spinner-binary"
+                            ></div>
+                        </div>
+                        <a
+                            id="binary-video-download"
+                            class="btn-download"
+                            style="display: none; margin: 8px 0 0 0"
+                            download="binary_lanes.mp4"
+                            >Download Binary Video</a
+                        >
+                    </div>
+
+                    <div class="panel video-panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Instance Segmentation Video</span
+                            >
+                            <span class="panel-chip chip-instance"
+                                >DISC. LOSS</span
+                            >
+                        </div>
+                        <div
+                            class="image-frame"
+                            style="height: auto; padding: 12px"
+                        >
+                            <video
+                                id="instance-video"
+                                controls
+                                style="display: none"
+                            ></video>
+                            <div class="ph" id="ph-instance-video">
+                                Instance output video<br />will appear here.
+                            </div>
+                            <div
+                                class="spinner"
+                                id="video-spinner-instance"
+                            ></div>
+                        </div>
+                        <a
+                            id="instance-video-download"
+                            class="btn-download"
+                            style="display: none; margin: 8px 0 0 0"
+                            download="instance_lanes.mp4"
+                            >Download Instance Video</a
+                        >
+                    </div>
+                </div>
             </div>
-          </div>
 
-        </div>
-      </section>
+            <!-- ── LIVE CONTROLS ──────────────────────────────────────── -->
+            <div id="live-controls" style="display: none">
+                <div class="live-controls">
+                    <button class="btn-live btn-start" id="start-camera">
+                        Start Camera
+                    </button>
+                    <button class="btn-live btn-stop" id="stop-camera" disabled>
+                        Stop Camera
+                    </button>
+                    <span class="fps-badge" id="fps-display">-- FPS</span>
+                </div>
 
-      <div class="section-bridge" aria-hidden="true">
-        <span class="bridge-line"></span>
-        <span class="bridge-label mono">// Detection Studio</span>
-        <span class="bridge-line"></span>
-      </div>
+                <div class="status-bar" id="live-status-bar">
+                    <span class="sdot"></span>
+                    <span id="live-status-text"
+                        >Click Start Camera to begin.</span
+                    >
+                </div>
 
-      <section class="studio" id="studio">
-        <div class="container">
-          <form id="upload-form">
-            <div class="controls">
-              <input id="file-input" name="image" type="file" accept="image/*">
+                <div class="preview-grid" id="live-grid">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Live Camera Feed</span>
+                            <span class="panel-chip chip-raw">RAW</span>
+                        </div>
+                        <div
+                            class="image-frame"
+                            style="height: auto; padding: 8px"
+                        >
+                            <video
+                                id="live-video"
+                                autoplay
+                                muted
+                                playsinline
+                                class="live-video-frame"
+                                style="display: none"
+                            ></video>
+                            <div class="ph" id="ph-live-feed">
+                                Camera feed<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
 
-              <label for="file-input" class="btn btn-ghost">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 16V4"></path>
-                  <path d="m7 9 5-5 5 5"></path>
-                  <path d="M20 16.5v2a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-2"></path>
-                </svg>
-                Choose Image
-              </label>
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Binary Segmentation</span>
+                            <span class="panel-chip chip-binary">LIVE</span>
+                        </div>
+                        <div class="image-frame">
+                            <img id="live-binary" alt="Live binary" />
+                            <div class="ph" id="ph-live-binary">
+                                Live binary output<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
 
-              <button type="submit" class="btn btn-primary" id="run-button">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"></path>
-                </svg>
-                Run Detection
-              </button>
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Instance Segmentation</span
+                            >
+                            <span class="panel-chip chip-instance">LIVE</span>
+                        </div>
+                        <div class="image-frame">
+                            <img id="live-instance" alt="Live instance" />
+                            <div class="ph" id="ph-live-instance">
+                                Live instance output<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-              <span class="filename-tag" id="filename">No file selected</span>
+                <canvas
+                    id="capture-canvas"
+                    width="320"
+                    height="180"
+                    style="display: none"
+                ></canvas>
             </div>
-          </form>
+        </main>
 
-          <div class="status-bar" id="status-bar">
-            <span class="status-dot" aria-hidden="true"></span>
-            <span id="status-text">Ready to analyse a frame.</span>
-          </div>
+        <!-- THEORY PANEL -->
+        <div class="overlay-backdrop" id="backdrop"></div>
 
-          <div class="preview-grid">
-            <section class="panel">
-              <div class="panel-head">
-                <span class="panel-title">Uploaded Image</span>
-                <span class="panel-chip chip-raw">RAW</span>
-              </div>
-              <div class="image-frame">
-                <img id="input-preview" alt="Uploaded image preview">
-                <div class="placeholder" id="ph-input">Awaiting input frame</div>
-              </div>
-            </section>
-
-            <section class="panel">
-              <div class="panel-head">
-                <span class="panel-title">Binary Segmentation</span>
-                <span class="panel-chip chip-binary">FOCAL LOSS</span>
-              </div>
-              <div class="image-frame">
-                <img id="binary-preview" alt="Binary lane segmentation preview">
-                <div class="spinner" id="spinner"></div>
-                <div class="placeholder" id="ph-binary">Mask output will render here</div>
-              </div>
-            </section>
-
-            <section class="panel">
-              <div class="panel-head">
-                <span class="panel-title">Instance Segmentation</span>
-                <span class="panel-chip chip-instance">DISC. LOSS</span>
-              </div>
-              <div class="image-frame">
-                <img id="instance-preview" alt="Instance lane segmentation preview">
-                <div class="spinner" id="spinner-instance"></div>
-                <div class="placeholder" id="ph-instance">Embedding output will render here</div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div class="overlay-backdrop" id="backdrop"></div>
-
-  <aside class="theory-panel" id="theoryPanel" aria-hidden="true">
-    <div class="tp-header">
-      <div>
-        <div class="tp-title">Theory Reference</div>
-      </div>
-      <button class="tp-close" id="closeTheory" type="button" aria-label="Close theory panel">×</button>
-    </div>
-
-    <div class="tp-tabs" id="tabsRow">
-      <button class="tab-btn active" type="button" data-tab="overview">Overview</button>
-      <button class="tab-btn" type="button" data-tab="architecture">Architecture</button>
-      <button class="tab-btn" type="button" data-tab="training">Training</button>
-      <button class="tab-btn" type="button" data-tab="inference">Inference</button>
-      <button class="tab-btn" type="button" data-tab="performance">Performance</button>
-      <button class="tab-btn" type="button" data-tab="references">References</button>
-    </div>
-
-    <div class="tp-body">
-      <section class="tab-pane active" id="tab-overview">
-        <h3 class="content-title">What is Lane Detection Studio?</h3>
-        <p class="content-subtitle">A compact inference interface for exploring LaneNet-style road lane segmentation in real time.</p>
-        <p class="content-copy">This project packages <strong>LaneNet</strong> into a clean browser-based workflow. A single forward pass generates both a <strong>binary segmentation mask</strong> and an <strong>instance-aware lane embedding map</strong>, making it easy to inspect where the network sees drivable lane markings and how it separates one lane from another.</p>
-        <p class="content-copy">The current stack is tuned for the <strong>TuSimple benchmark</strong>, served through a Flask API, and backed by weights loaded from <code>log/best_model.pth</code>. The frontend stays lightweight while the backend handles image normalization, model execution, and base64 output encoding.</p>
-
-        <div class="card-grid">
-          <article class="theory-card">
-            <h4>Binary Segmentation</h4>
-            <p>Every pixel is classified as lane or background. This branch focuses on recall and sharp lane boundaries, even when the foreground occupies only a very small area of the frame.</p>
-            <span class="chip amber">Lane / Background</span>
-          </article>
-          <article class="theory-card">
-            <h4>Instance Segmentation</h4>
-            <p>Embedding vectors allow the system to distinguish adjacent lanes without requiring a separate object detector. Clustering in embedding space produces visually distinct lane groups.</p>
-            <span class="chip blue">Lane Identity</span>
-          </article>
-          <article class="theory-card">
-            <h4>Input Resolution</h4>
-            <p>Inference runs on frames resized to <strong>512 × 256</strong>, balancing edge-device throughput and enough spatial fidelity for lane structure.</p>
-            <span class="chip">512 × 256</span>
-          </article>
-          <article class="theory-card">
-            <h4>Deployment Surface</h4>
-            <p>The project exposes a simple <code>POST /predict</code> endpoint, making it easy to deploy locally, inside Docker, or behind a cloud VM and still keep the frontend unchanged.</p>
-            <span class="chip blue">Flask + JSON</span>
-          </article>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-architecture">
-        <h3 class="content-title">Model Architecture</h3>
-        <p class="content-subtitle">A shared encoder, dual decoder design optimised for efficient lane understanding.</p>
-        <p class="content-copy">LaneNet uses a <strong>single shared feature extractor</strong> so both tasks benefit from the same low-level road texture, edge, and perspective cues. After encoding, the network splits into two task-specific heads: one branch predicts binary logits, and the other predicts dense embeddings used for lane separation.</p>
-
-        <div class="card-grid wide">
-          <article class="theory-card">
-            <h4>ENet Backbone</h4>
-            <p>The default model uses ENet for its small footprint and fast inference characteristics. It relies on early downsampling, asymmetric convolution blocks, dilated kernels, and lightweight bottlenecks to keep latency low on constrained hardware.</p>
-            <span class="chip blue">~3M params · Real-time</span>
-          </article>
-          <article class="theory-card">
-            <h4>Shared Features</h4>
-            <p>Because the binary and embedding heads see the same encoder output, the model can learn lane-relevant structure once and reuse it for both detection and separation. This reduces total compute compared with training two independent networks.</p>
-            <span class="chip">Shared Encoder</span>
-          </article>
-          <article class="theory-card">
-            <h4>Normalisation</h4>
-            <p>Image preprocessing uses ImageNet mean and standard deviation values: mean <strong>[0.485, 0.456, 0.406]</strong> and std <strong>[0.229, 0.224, 0.225]</strong>. That keeps the input scale compatible with pre-trained encoder expectations.</p>
-            <span class="chip amber">ImageNet Stats</span>
-          </article>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-training">
-        <h3 class="content-title">Training Strategy</h3>
-        <p class="content-subtitle">The model is trained end-to-end with a weighted combination of detection and embedding losses.</p>
-        <p class="content-copy">Lane pixels are sparse compared with road background, so the binary head uses <strong>Focal Loss</strong> to keep the network focused on difficult, underrepresented foreground examples. The instance branch uses a <strong>Discriminative Loss</strong> that pulls same-lane embeddings together while pushing different-lane clusters apart.</p>
-
-        <div class="formula-block">
-          <div class="formula-name">Focal Loss</div>
-          <div class="formula-eq">FL(p_t) = - alpha (1 - p_t)^gamma log(p_t), gamma = 2</div>
-          <div class="formula-desc">This loss down-weights easy background predictions and makes mislabeled or low-confidence lane pixels matter more during optimization. In the combined objective, the binary term carries the highest weight.</div>
-        </div>
-
-        <div class="formula-block amber">
-          <div class="formula-name">Discriminative Loss</div>
-          <div class="formula-eq">L = L_var + L_dist + L_reg, delta_var = 0.5, delta_dist = 1.5</div>
-          <div class="formula-desc"><strong>L_var</strong> compresses embeddings within a lane cluster, <strong>L_dist</strong> separates different lane centers, and <strong>L_reg</strong> prevents unbounded feature drift. Together they produce stable lane instances without a classic object detector.</div>
-        </div>
-
-        <p class="content-copy">Typical training setup: <strong>100 epochs</strong>, batch size <strong>32</strong>, learning rate <strong>0.001</strong>, and augmentation with resize plus lightweight color jitter. Labels are resized with nearest-neighbor interpolation so discrete class IDs remain intact.</p>
-      </section>
-
-      <section class="tab-pane" id="tab-inference">
-        <h3 class="content-title">Inference Pipeline</h3>
-        <p class="content-subtitle">From browser upload to rendered output in six steps.</p>
-
-        <div class="steps">
-          <div class="step">
-            <div class="step-badge">1</div>
-            <div>
-              <div class="step-title">Frame Upload</div>
-              <p class="step-copy">The browser sends a multipart form request to <code>/predict</code> with the selected road image under the <code>image</code> field.</p>
+        <aside class="theory-panel" id="theoryPanel">
+            <div class="tp-header">
+                <div class="tp-brand">see lane</div>
+                <button class="tp-close" id="closeTheory">CLOSE</button>
             </div>
-          </div>
-          <div class="step">
-            <div class="step-badge">2</div>
-            <div>
-              <div class="step-title">Input Sanitisation</div>
-              <p class="step-copy">Flask loads the upload through Pillow, normalises orientation metadata, and converts the image into a clean three-channel RGB JPEG for the existing inference path.</p>
+
+            <div class="tp-tabs" id="tabsRow">
+                <button class="tab-btn active" data-tab="overview">
+                    Context
+                </button>
+                <button class="tab-btn" data-tab="architecture">
+                    Structure
+                </button>
+                <button class="tab-btn" data-tab="training">Algorithm</button>
+                <button class="tab-btn" data-tab="inference">Pipeline</button>
+                <button class="tab-btn" data-tab="performance">Metrics</button>
+                <button class="tab-btn" data-tab="references">Citations</button>
             </div>
-          </div>
-          <div class="step">
-            <div class="step-badge">3</div>
-            <div>
-              <div class="step-title">Locked Execution</div>
-              <p class="step-copy">A global <code>threading.Lock</code> prevents overlapping model runs, which helps avoid memory contention on GPU-backed deployments.</p>
+
+            <div class="tp-body">
+                <div class="tc-sidebar">
+                    <div class="badge">Research Paper</div>
+                    <p
+                        style="
+                            margin-top: 20px;
+                            color: var(--dm-gray);
+                            font-size: 14px;
+                        "
+                    >
+                        Towards End-to-End Lane Detection: an Instance
+                        Segmentation Approach
+                    </p>
+                </div>
+                <div class="tc-content">
+                    <!-- OVERVIEW -->
+                    <div class="tab-pane active" id="tab-overview">
+                        <div class="tc-h2">Visual Intelligence</div>
+                        <div class="tc-sub">Lane Detection Studio // MDS</div>
+                        <p class="tc-p">
+                            <strong>see lane</strong> implements the
+                            state-of-the-art LaneNet architecture. By leveraging
+                            a single-shot instance segmentation approach, we
+                            provide autonomous systems with the critical ability
+                            to not only identify road lanes but to distinguish
+                            between individual lane instances with pixel-perfect
+                            accuracy.
+                        </p>
+                        <p class="tc-p">
+                            The system is trained on the
+                            <strong>TuSimple benchmark</strong> and served via a
+                            Flask REST API. A threading lock prevents concurrent
+                            GPU allocation. Pre-trained weights are loaded from
+                            <code>log/best_model.pth</code>.
+                        </p>
+                        <div class="card-grid">
+                            <div class="tc-card">
+                                <div class="tc-card-title">
+                                    Binary Segmentation
+                                </div>
+                                <div class="tc-card-body">
+                                    Classifies every pixel as lane or non-lane.
+                                    Uses Focal Loss to handle severe class
+                                    imbalance — lanes occupy only a small
+                                    fraction of any road image.
+                                </div>
+                            </div>
+                            <div class="tc-card">
+                                <div class="tc-card-title">
+                                    Instance Segmentation
+                                </div>
+                                <div class="tc-card-body">
+                                    Assigns a unique identity to each individual
+                                    lane using Discriminative Loss embeddings.
+                                    No explicit instance labels required during
+                                    training.
+                                </div>
+                            </div>
+                            <div class="tc-card">
+                                <div class="tc-card-title">Input / Output</div>
+                                <div class="tc-card-body">
+                                    Input: RGB images resized to 512 × 256.
+                                    Output: 2-channel binary mask + 3-channel
+                                    RGB instance colour map.
+                                </div>
+                                <span class="tc-tag">512 × 256 px</span>
+                            </div>
+                            <div class="tc-card">
+                                <div class="tc-card-title">Deployment</div>
+                                <div class="tc-card-body">
+                                    Flask web server with Docker support. REST
+                                    endpoint at <code>/predict</code>. Supports
+                                    local, AWS EC2, Heroku, and Kubernetes
+                                    deployments.
+                                </div>
+                                <span class="tc-tag red">Docker Ready</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ARCHITECTURE -->
+                    <div class="tab-pane" id="tab-architecture">
+                        <div class="tc-h2">The Blueprint</div>
+                        <div class="tc-sub">
+                            Shared Encoder // Multi-Decoder Branch
+                        </div>
+                        <p class="tc-p">
+                            Efficiency is at the core of
+                            <strong>a see lane</strong>. We utilize a shared
+                            encoder that extracts high-dimensional features
+                            once, feeding into independent decoder branches for
+                            semantic and instance tasks. This architectural
+                            elegance ensures low latency without compromising on
+                            spatial resolution.
+                        </p>
+                        <div class="card-grid">
+                            <div class="tc-card">
+                                <div class="tc-card-title">ENet Engine</div>
+                                <div class="tc-card-body">
+                                    A lightweight backbone optimized for
+                                    real-time edge deployment. Minimizes
+                                    parameter count while maximizing performance
+                                    via dilated convolutions.
+                                </div>
+                                <span class="tc-tag">3M Params // 25ms</span>
+                            </div>
+                            <div class="tc-card">
+                                <div class="tc-card-title">DeepLabv3+</div>
+                                <div class="tc-card-body">
+                                    For scenarios requiring maximum fidelity.
+                                    Employs Atrous Spatial Pyramid Pooling
+                                    (ASPP) to capture multi-scale context.
+                                </div>
+                                <span class="tc-tag red"
+                                    >50M Params // 80ms</span
+                                >
+                            </div>
+                        </div>
+                        <p class="tc-p">
+                            <strong>Normalisation stats</strong>: mean [0.485,
+                            0.456, 0.406], std [0.229, 0.224, 0.225] — standard
+                            ImageNet statistics for compatibility with
+                            pre-trained encoder weights.
+                        </p>
+                    </div>
+
+                    <!-- TRAINING -->
+                    <div class="tab-pane" id="tab-training">
+                        <div class="tc-h2">Training the Model</div>
+                        <div class="tc-sub">
+                            Loss functions, dataset preparation, and
+                            optimisation strategy.
+                        </div>
+                        <p class="tc-p">
+                            The model is trained end-to-end with a combined loss
+                            that weights binary detection
+                            <strong>10×</strong> more than instance separation,
+                            reflecting the primacy of detecting lane pixels
+                            before differentiating them from one another.
+                        </p>
+
+                        <div class="formula-block">
+                            <div class="formula-name">
+                                Focal Loss — Binary Segmentation
+                            </div>
+                            <div class="formula-eq">
+                                FL(pt) = -alpha(1-pt)^gamma * log(pt)
+                                &nbsp;&nbsp; gamma=2, alpha=[0.25, 0.75]
+                            </div>
+                            <div class="formula-desc">
+                                Down-weights the contribution of easy,
+                                correctly-classified background pixels so the
+                                model focuses its learning capacity on the rare
+                                and difficult lane pixels. Weight in combined
+                                loss: <strong>10x</strong>.
+                            </div>
+                        </div>
+
+                        <div class="formula-block red">
+                            <div class="formula-name">
+                                Discriminative Loss — Instance Segmentation
+                            </div>
+                            <div class="formula-eq">
+                                L = L_var + L_dist + L_reg &nbsp;&nbsp;
+                                delta_var=0.5, delta_dist=1.5, gamma=0.001
+                            </div>
+                            <div class="formula-desc">
+                                <strong>L_var</strong> pulls pixels of the same
+                                lane close to their mean embedding.
+                                <strong>L_dist</strong> pushes different lane
+                                mean embeddings apart.
+                                <strong>L_reg</strong> prevents embeddings
+                                growing unbounded. Combined weight:
+                                <strong>0.3 x L_var + 1.0 x L_dist</strong>.
+                            </div>
+                        </div>
+
+                        <p class="tc-p">
+                            <strong>Total Loss</strong> = 10 x FocalLoss + 0.3 x
+                            L_var + 1.0 x L_dist
+                        </p>
+                        <div class="divider"></div>
+
+                        <p class="tc-p">
+                            <strong>Dataset — TuSimple Benchmark.</strong> Each
+                            training sample contains an RGB image, a binary
+                            ground-truth mask (lane pixel = 1, background = 0),
+                            and an instance mask where each lane is assigned a
+                            unique colour. Data is generated with
+                            <code>tusimple_transform.py</code> which supports
+                            training-only, train+val, or train+val+test splits.
+                        </p>
+
+                        <p class="tc-p">
+                            <strong>Data Augmentation (training only):</strong>
+                            Resize to 256x512 → ColorJitter (brightness,
+                            contrast, saturation, hue each ±0.1) → ToTensor →
+                            ImageNet Normalize. Validation uses resize and
+                            normalise only — no augmentation. Label masks are
+                            resized with INTER_NEAREST to preserve discrete
+                            integer values.
+                        </p>
+
+                        <p class="tc-p">
+                            <strong>Optimiser:</strong> Adam or SGD with
+                            step/exponential learning rate scheduling. Default:
+                            100 epochs, batch size 32, lr = 0.001, weight decay
+                            = 1e-4, validation split = 10%.
+                        </p>
+                    </div>
+
+                    <!-- INFERENCE -->
+                    <div class="tab-pane" id="tab-inference">
+                        <div class="tc-h2">Inference Pipeline</div>
+                        <div class="tc-sub">
+                            From browser upload to JSON response — step by step.
+                        </div>
+                        <div class="steps">
+                            <div class="step">
+                                <div class="step-num">1</div>
+                                <div>
+                                    <div class="step-title">Image Upload</div>
+                                    <div class="step-desc">
+                                        User submits a multipart form to
+                                        <code>POST /predict</code>. Flask reads
+                                        the file from
+                                        <code>request.files["image"]</code>.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">2</div>
+                                <div>
+                                    <div class="step-title">
+                                        Acquire Inference Lock
+                                    </div>
+                                    <div class="step-desc">
+                                        <code>INFERENCE_LOCK</code>
+                                        (threading.Lock) prevents simultaneous
+                                        forward passes, avoiding GPU memory
+                                        conflicts on shared hardware.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">3</div>
+                                <div>
+                                    <div class="step-title">Preprocess</div>
+                                    <div class="step-desc">
+                                        PIL opens the image. Resize to 512×256 →
+                                        ToTensor → ImageNet Normalize. Tensor
+                                        moved to CUDA if available, else CPU.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">4</div>
+                                <div>
+                                    <div class="step-title">Forward Pass</div>
+                                    <div class="step-desc">
+                                        LaneNet forward pass produces binary
+                                        logits (2 channels) and instance
+                                        embeddings (3 channels). Weights from
+                                        <code>log/best_model.pth</code>.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">5</div>
+                                <div>
+                                    <div class="step-title">Post-process</div>
+                                    <div class="step-desc">
+                                        Argmax over binary logits produces the
+                                        lane mask. Instance embeddings are
+                                        colour-mapped to a 3-channel RGB output.
+                                        Results saved to
+                                        <code>test_output/</code>.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">6</div>
+                                <div>
+                                    <div class="step-title">
+                                        Encode &amp; Respond
+                                    </div>
+                                    <div class="step-desc">
+                                        Both images are base64-encoded and
+                                        returned as:
+                                        <code
+                                            >{ "binary_image": "...",
+                                            "instance_image": "..." }</code
+                                        >. The frontend decodes and displays
+                                        them inline.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PERFORMANCE -->
+                    <div class="tab-pane" id="tab-performance">
+                        <div class="tc-h2">Performance Benchmarks</div>
+                        <div class="tc-sub">
+                            Measured on a single NVIDIA V100 GPU with 640×480
+                            images.
+                        </div>
+                        <table class="metrics-table">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Params</th>
+                                    <th>Inference</th>
+                                    <th>Binary Acc.</th>
+                                    <th>Instance Acc.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>ENet</strong> (default)</td>
+                                    <td>3M</td>
+                                    <td>25ms</td>
+                                    <td class="val-green">92%</td>
+                                    <td class="val-green">89%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>U-Net</strong></td>
+                                    <td>30M</td>
+                                    <td>45ms</td>
+                                    <td class="val-green">95%</td>
+                                    <td class="val-green">92%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DeepLabv3+</strong></td>
+                                    <td>50M</td>
+                                    <td>80ms</td>
+                                    <td class="val-green">97%</td>
+                                    <td class="val-green">94%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="divider"></div>
+                        <p class="tc-p">
+                            <strong>Evaluation Metrics</strong> used throughout
+                            training:
+                        </p>
+                        <div class="formula-block">
+                            <div class="formula-name">
+                                Dice Coefficient (F1-score)
+                            </div>
+                            <div class="formula-eq">
+                                Dice = 2 * |A∩B| / (|A| + |B|)
+                            </div>
+                            <div class="formula-desc">
+                                Range [0,1]. More robust to class imbalance than
+                                pixel accuracy. Threshold applied at 0.5 for
+                                binarising predictions. Preferred metric for
+                                lane evaluation.
+                            </div>
+                        </div>
+                        <div class="formula-block red">
+                            <div class="formula-name">
+                                Intersection over Union (IoU)
+                            </div>
+                            <div class="formula-eq">IoU = |A∩B| / |A∪B|</div>
+                            <div class="formula-desc">
+                                Range [0,1]. Stricter than Dice — penalises
+                                false positives and false negatives equally.
+                                Standard segmentation benchmark metric.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REFERENCES -->
+                    <div class="tab-pane" id="tab-references">
+                        <div class="tc-h2">References</div>
+                        <div class="tc-sub">
+                            The research papers this project builds upon.
+                        </div>
+
+                        <a
+                            class="cite-link"
+                            href="https://arxiv.org/abs/1802.05591"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <span class="cite-num">[1]</span>
+                            <div>
+                                <div class="cite-title">
+                                    Towards End-to-End Lane Detection: an
+                                    Instance Segmentation Approach
+                                </div>
+                                <div class="cite-meta">
+                                    Neven, De Brabandere, Georgoulis, Proesmans,
+                                    Van Gool · 2018 IEEE Intelligent Vehicles
+                                    Symposium · arXiv:1802.05591
+                                </div>
+                            </div>
+                        </a>
+
+                        <a
+                            class="cite-link"
+                            href="https://arxiv.org/abs/1606.02147"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <span class="cite-num">[2]</span>
+                            <div>
+                                <div class="cite-title">
+                                    ENet: A Deep Neural Network Architecture for
+                                    Real-Time Semantic Segmentation
+                                </div>
+                                <div class="cite-meta">
+                                    Paszke, Chaurasia, Kim, Culurciello ·
+                                    arXiv:1606.02147 · 2016
+                                </div>
+                            </div>
+                        </a>
+
+                        <a
+                            class="cite-link"
+                            href="https://arxiv.org/abs/1708.02551"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <span class="cite-num">[3]</span>
+                            <div>
+                                <div class="cite-title">
+                                    Semantic Instance Segmentation with a
+                                    Discriminative Loss Function
+                                </div>
+                                <div class="cite-meta">
+                                    De Brabandere, Neven, Van Gool ·
+                                    arXiv:1708.02551 · 2017
+                                </div>
+                            </div>
+                        </a>
+
+                        <div class="divider"></div>
+                        <p class="tc-p">
+                            <strong>Tech Stack:</strong> PyTorch 1.2+ ·
+                            Torchvision · Flask · OpenCV (cv2) · Pillow · NumPy
+                            · Pandas · scikit-image · Base64 · threading.Lock ·
+                            Docker · TuSimple Benchmark Dataset
+                        </p>
+                    </div>
+                </div>
+                <!-- /.tc-content -->
             </div>
-          </div>
-          <div class="step">
-            <div class="step-badge">4</div>
-            <div>
-              <div class="step-title">Forward Pass</div>
-              <p class="step-copy">LaneNet generates binary logits and instance embeddings from the resized input tensor, using weights stored at <code>log/best_model.pth</code>.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-badge">5</div>
-            <div>
-              <div class="step-title">Post-processing</div>
-              <p class="step-copy">The binary mask is produced from class predictions while the embedding output is converted into a colored visualization so each lane group is easier to inspect.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-badge">6</div>
-            <div>
-              <div class="step-title">JSON Response</div>
-              <p class="step-copy">The backend returns base64-encoded <code>binary_image</code> and <code>instance_image</code> fields, and the frontend injects them directly into the preview panels.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+            <!-- /.tp-body -->
+        </aside>
 
-      <section class="tab-pane" id="tab-performance">
-        <h3 class="content-title">Performance Snapshot</h3>
-        <p class="content-subtitle">Representative latency and segmentation quality figures for the supported architectures.</p>
+        <script>
+            // ── THEORY PANEL ───────────────────────────────────────────────
+            const openBtn = document.getElementById("openTheory");
+            const closeBtn = document.getElementById("closeTheory");
+            const backdrop = document.getElementById("backdrop");
+            const panel = document.getElementById("theoryPanel");
 
-        <table class="metrics-table">
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Params</th>
-              <th>Inference</th>
-              <th>Binary Acc.</th>
-              <th>Instance Acc.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>ENet</strong> default</td>
-              <td>3M</td>
-              <td>18-25ms</td>
-              <td class="val-blue">92%</td>
-              <td class="val-blue">89%</td>
-            </tr>
-            <tr>
-              <td><strong>U-Net</strong></td>
-              <td>30M</td>
-              <td>45ms</td>
-              <td class="val-blue">95%</td>
-              <td class="val-blue">92%</td>
-            </tr>
-            <tr>
-              <td><strong>DeepLabv3+</strong></td>
-              <td>50M</td>
-              <td>80ms</td>
-              <td class="val-blue">97%</td>
-              <td class="val-blue">94%</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="formula-block">
-          <div class="formula-name">Dice Coefficient</div>
-          <div class="formula-eq">Dice = 2 |A intersect B| / (|A| + |B|)</div>
-          <div class="formula-desc">Dice is commonly preferred for lane evaluation because it remains informative even when the positive class occupies only a small fraction of the frame.</div>
-        </div>
-
-        <div class="formula-block amber">
-          <div class="formula-name">Intersection over Union</div>
-          <div class="formula-eq">IoU = |A intersect B| / |A union B|</div>
-          <div class="formula-desc">IoU is stricter than Dice and penalizes false positives and false negatives symmetrically, making it a strong benchmark metric for segmentation quality.</div>
-        </div>
-      </section>
-
-      <section class="tab-pane" id="tab-references">
-        <h3 class="content-title">References</h3>
-        <p class="content-subtitle">Core papers and foundations behind the current system.</p>
-
-        <a class="cite-card" href="https://arxiv.org/abs/1802.05591" target="_blank" rel="noopener">
-          <span class="citation-index">[1]</span>
-          <div>
-            <div class="citation-title">Towards End-to-End Lane Detection: an Instance Segmentation Approach</div>
-            <div class="citation-meta">Neven, De Brabandere, Georgoulis, Proesmans, Van Gool · IEEE IV 2018 · arXiv:1802.05591</div>
-          </div>
-        </a>
-
-        <a class="cite-card" href="https://arxiv.org/abs/1606.02147" target="_blank" rel="noopener">
-          <span class="citation-index">[2]</span>
-          <div>
-            <div class="citation-title">ENet: A Deep Neural Network Architecture for Real-Time Semantic Segmentation</div>
-            <div class="citation-meta">Paszke, Chaurasia, Kim, Culurciello · 2016 · arXiv:1606.02147</div>
-          </div>
-        </a>
-
-        <a class="cite-card" href="https://arxiv.org/abs/1708.02551" target="_blank" rel="noopener">
-          <span class="citation-index">[3]</span>
-          <div>
-            <div class="citation-title">Semantic Instance Segmentation with a Discriminative Loss Function</div>
-            <div class="citation-meta">De Brabandere, Neven, Van Gool · 2017 · arXiv:1708.02551</div>
-          </div>
-        </a>
-
-        <p class="content-copy"><strong>Stack summary:</strong> PyTorch, Torchvision, Pillow, NumPy, OpenCV, Flask, Base64 transport, and TuSimple-derived training data.</p>
-      </section>
-    </div>
-  </aside>
-
-  <script>
-    const openTheoryNav = document.getElementById("openTheoryNav");
-    const closeTheoryBtn = document.getElementById("closeTheory");
-    const backdrop = document.getElementById("backdrop");
-    const theoryPanel = document.getElementById("theoryPanel");
-
-    const form = document.getElementById("upload-form");
-    const fileInput = document.getElementById("file-input");
-    const filenameEl = document.getElementById("filename");
-    const statusBar = document.getElementById("status-bar");
-    const statusText = document.getElementById("status-text");
-    const runButton = document.getElementById("run-button");
-    const inputPreview = document.getElementById("input-preview");
-    const binaryPreview = document.getElementById("binary-preview");
-    const instancePreview = document.getElementById("instance-preview");
-    const phInput = document.getElementById("ph-input");
-    const phBinary = document.getElementById("ph-binary");
-    const phInstance = document.getElementById("ph-instance");
-    const spinnerBinary = document.getElementById("spinner");
-    const spinnerInstance = document.getElementById("spinner-instance");
-
-    let inputUrl = null;
-
-    function setStatus(message, state = "") {
-      statusText.textContent = message;
-      statusBar.className = "status-bar" + (state ? " " + state : "");
-    }
-
-    function revokeObjectUrl(url) {
-      if (url && url.startsWith("blob:")) {
-        URL.revokeObjectURL(url);
-      }
-    }
-
-    function openTheoryPanel() {
-      theoryPanel.classList.add("open");
-      backdrop.classList.add("open");
-      theoryPanel.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeTheoryPanel() {
-      theoryPanel.classList.remove("open");
-      backdrop.classList.remove("open");
-      theoryPanel.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    }
-
-    function resetOutputs() {
-      binaryPreview.classList.remove("visible");
-      instancePreview.classList.remove("visible");
-      binaryPreview.removeAttribute("src");
-      instancePreview.removeAttribute("src");
-      phBinary.style.display = "block";
-      phInstance.style.display = "block";
-      phBinary.textContent = "Mask output will render here";
-      phInstance.textContent = "Embedding output will render here";
-    }
-
-    function previewSelectedFile(file) {
-      if (!file) {
-        return;
-      }
-
-      filenameEl.textContent = file.name;
-      revokeObjectUrl(inputUrl);
-      inputUrl = URL.createObjectURL(file);
-      inputPreview.src = inputUrl;
-      inputPreview.classList.add("visible");
-      phInput.style.display = "none";
-      resetOutputs();
-      spinnerBinary.classList.remove("visible");
-      spinnerInstance.classList.remove("visible");
-      setStatus("Frame loaded. Run detection when you are ready.");
-    }
-
-    openTheoryNav.addEventListener("click", openTheoryPanel);
-    closeTheoryBtn.addEventListener("click", closeTheoryPanel);
-    backdrop.addEventListener("click", closeTheoryPanel);
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        closeTheoryPanel();
-      }
-    });
-
-    document.getElementById("tabsRow").addEventListener("click", (event) => {
-      const tabButton = event.target.closest(".tab-btn");
-      if (!tabButton) {
-        return;
-      }
-
-      document.querySelectorAll(".tab-btn").forEach((button) => button.classList.remove("active"));
-      document.querySelectorAll(".tab-pane").forEach((pane) => pane.classList.remove("active"));
-
-      tabButton.classList.add("active");
-      document.getElementById(`tab-${tabButton.dataset.tab}`).classList.add("active");
-    });
-
-    fileInput.addEventListener("change", () => {
-      const [file] = fileInput.files;
-      previewSelectedFile(file);
-    });
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const [file] = fileInput.files;
-      if (!file) {
-        setStatus("Please choose an image first.", "error");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("image", file);
-
-      runButton.disabled = true;
-      spinnerBinary.classList.add("visible");
-      spinnerInstance.classList.add("visible");
-      phBinary.style.display = "none";
-      phInstance.style.display = "none";
-      binaryPreview.classList.remove("visible");
-      instancePreview.classList.remove("visible");
-      binaryPreview.removeAttribute("src");
-      instancePreview.removeAttribute("src");
-      setStatus("Running lane detection. This may take a few seconds.", "loading");
-
-      try {
-        const response = await fetch("/predict", {
-          method: "POST",
-          body: formData
-        });
-
-        if (!response.ok) {
-          let message = "Prediction failed.";
-          const text = await response.text();
-
-          try {
-            const payload = JSON.parse(text);
-            if (payload.error) {
-              message = payload.error;
+            function openPanel() {
+                panel.classList.add("open");
+                backdrop.classList.add("open");
+                document.body.style.overflow = "hidden";
             }
-          } catch (parseError) {
-            if (text.trim()) {
-              message = text.trim();
+            function closePanel() {
+                panel.classList.remove("open");
+                backdrop.classList.remove("open");
+                document.body.style.overflow = "";
             }
-          }
 
-          throw new Error(message);
-        }
+            openBtn.addEventListener("click", openPanel);
+            closeBtn.addEventListener("click", closePanel);
+            backdrop.addEventListener("click", closePanel);
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") closePanel();
+            });
 
-        const payload = await response.json();
-        binaryPreview.src = `data:image/jpeg;base64,${payload.binary_image}`;
-        instancePreview.src = `data:image/jpeg;base64,${payload.instance_image}`;
-        binaryPreview.classList.add("visible");
-        instancePreview.classList.add("visible");
-        setStatus("Detection complete.");
-      } catch (error) {
-        phBinary.style.display = "block";
-        phInstance.style.display = "block";
-        setStatus(error.message || "Prediction failed.", "error");
-      } finally {
-        spinnerBinary.classList.remove("visible");
-        spinnerInstance.classList.remove("visible");
-        runButton.disabled = false;
-      }
-    });
-  </script>
-</body>
+            document
+                .getElementById("tabsRow")
+                .addEventListener("click", (e) => {
+                    const btn = e.target.closest(".tab-btn");
+                    if (!btn) return;
+                    document
+                        .querySelectorAll(".tab-btn")
+                        .forEach((b) => b.classList.remove("active"));
+                    document
+                        .querySelectorAll(".tab-pane")
+                        .forEach((p) => p.classList.remove("active"));
+                    btn.classList.add("active");
+                    document
+                        .getElementById("tab-" + btn.dataset.tab)
+                        .classList.add("active");
+                });
+
+            // ── MODE SELECTOR ──────────────────────────────────────────────
+            const modeButtons = document.querySelectorAll(".btn-mode");
+            const photoControls = document.getElementById("photo-controls");
+            const videoControls = document.getElementById("video-controls");
+            const liveControls = document.getElementById("live-controls");
+
+            function switchMode(mode) {
+                modeButtons.forEach((b) =>
+                    b.classList.toggle("active", b.dataset.mode === mode),
+                );
+                photoControls.style.display = mode === "photo" ? "" : "none";
+                videoControls.style.display = mode === "video" ? "" : "none";
+                liveControls.style.display = mode === "live" ? "" : "none";
+                if (mode !== "live") stopLiveCamera();
+            }
+
+            modeButtons.forEach((b) =>
+                b.addEventListener("click", () => switchMode(b.dataset.mode)),
+            );
+
+            // ── PHOTO MODE ─────────────────────────────────────────────────
+            const form = document.getElementById("upload-form");
+            const fileInput = document.getElementById("file-input");
+            const filenameEl = document.getElementById("filename");
+            const statusBar = document.getElementById("status-bar");
+            const statusText = document.getElementById("status-text");
+            const runButton = document.getElementById("run-button");
+            const inputPrev = document.getElementById("input-preview");
+            const binaryPrev = document.getElementById("binary-preview");
+            const instancePrev = document.getElementById("instance-preview");
+            const phInput = document.getElementById("ph-input");
+            const phBinary = document.getElementById("ph-binary");
+            const phInstance = document.getElementById("ph-instance");
+            const spinner = document.getElementById("spinner");
+            const spinnerInstance = document.getElementById("spinner-instance");
+            const binaryOverlay = document.getElementById("binary-overlay");
+            const instanceOverlay = document.getElementById("instance-overlay");
+            const toggleBinary = document.getElementById("toggle-binary");
+            const toggleInstance = document.getElementById("toggle-instance");
+            let inputUrl = null,
+                instanceUrl = null;
+
+            function setStatus(msg, state = "") {
+                statusText.textContent = msg;
+                statusBar.className = "status-bar" + (state ? " " + state : "");
+            }
+            function revoke(url) {
+                if (url && url.startsWith("blob:")) URL.revokeObjectURL(url);
+            }
+
+            toggleBinary.addEventListener("click", () => {
+                binaryOverlay.classList.toggle("active");
+                toggleBinary.classList.toggle("on");
+            });
+            toggleInstance.addEventListener("click", () => {
+                instanceOverlay.classList.toggle("active");
+                toggleInstance.classList.toggle("on");
+            });
+
+            fileInput.addEventListener("change", () => {
+                const [file] = fileInput.files;
+                if (!file) return;
+                filenameEl.textContent = file.name;
+                revoke(inputUrl);
+                inputUrl = URL.createObjectURL(file);
+                inputPrev.src = inputUrl;
+                inputPrev.classList.add("visible");
+                phInput.style.display = "none";
+                binaryPrev.classList.remove("visible");
+                binaryPrev.removeAttribute("src");
+                phBinary.style.display = "block";
+                instancePrev.classList.remove("visible");
+                instancePrev.removeAttribute("src");
+                phInstance.style.display = "block";
+                binaryOverlay.src = inputUrl;
+                instanceOverlay.src = inputUrl;
+                binaryOverlay.classList.remove("active");
+                toggleBinary.classList.remove("on");
+                instanceOverlay.classList.remove("active");
+                toggleInstance.classList.remove("on");
+                spinner.classList.remove("visible");
+                spinnerInstance.classList.remove("visible");
+                setStatus("Image ready — click Run Detection.");
+            });
+
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const [file] = fileInput.files;
+                if (!file) {
+                    setStatus("Please choose an image first.", "error");
+                    return;
+                }
+                const fd = new FormData();
+                fd.append("image", file);
+                runButton.disabled = true;
+                spinner.classList.add("visible");
+                spinnerInstance.classList.add("visible");
+                phBinary.style.display = "none";
+                phInstance.style.display = "none";
+                binaryPrev.classList.remove("visible");
+                binaryPrev.removeAttribute("src");
+                instancePrev.classList.remove("visible");
+                instancePrev.removeAttribute("src");
+                binaryOverlay.classList.remove("active");
+                toggleBinary.classList.remove("on");
+                instanceOverlay.classList.remove("active");
+                toggleInstance.classList.remove("on");
+                revoke(instanceUrl);
+                instanceUrl = null;
+                setStatus(
+                    "Running lane detection — this may take a few seconds.",
+                    "loading",
+                );
+                try {
+                    const res = await fetch("/predict", {
+                        method: "POST",
+                        body: fd,
+                    });
+                    if (!res.ok) {
+                        let msg = "Prediction failed.";
+                        const txt = await res.text();
+                        try {
+                            const j = JSON.parse(txt);
+                            if (j.error) msg = j.error;
+                        } catch (_) {
+                            if (txt.trim()) msg = txt.trim();
+                        }
+                        throw new Error(msg);
+                    }
+                    const ct = res.headers.get("content-type") || "";
+                    if (ct.includes("application/json")) {
+                        const data = await res.json();
+                        binaryPrev.src = `data:image/jpeg;base64,${data.binary_image}`;
+                        instancePrev.src = `data:image/jpeg;base64,${data.instance_image}`;
+                        binaryPrev.classList.add("visible");
+                        instancePrev.classList.add("visible");
+                        setStatus(
+                            "Detection complete — use Overlay buttons to compare.",
+                        );
+                    } else {
+                        throw new Error(
+                            "Unexpected response format from /predict.",
+                        );
+                    }
+                } catch (err) {
+                    phBinary.style.display = "block";
+                    phInstance.style.display = "block";
+                    setStatus(err.message || "Prediction failed.", "error");
+                } finally {
+                    spinner.classList.remove("visible");
+                    spinnerInstance.classList.remove("visible");
+                    runButton.disabled = false;
+                }
+            });
+
+            // ── VIDEO MODE ─────────────────────────────────────────────────
+            const videoFileInput = document.getElementById("video-file-input");
+            const videoFilenameEl = document.getElementById("video-filename");
+            const videoRunButton = document.getElementById("video-run-button");
+            const videoStatusBar = document.getElementById("video-status-bar");
+            const videoStatusText =
+                document.getElementById("video-status-text");
+            const binaryVideoEl = document.getElementById("binary-video");
+            const instanceVideoEl = document.getElementById("instance-video");
+            const phBinaryVideo = document.getElementById("ph-binary-video");
+            const phInstanceVideo =
+                document.getElementById("ph-instance-video");
+            const binaryVideoDownload = document.getElementById(
+                "binary-video-download",
+            );
+            const instanceVideoDownload = document.getElementById(
+                "instance-video-download",
+            );
+            const videoSpinnerBinary = document.getElementById(
+                "video-spinner-binary",
+            );
+            const videoSpinnerInstance = document.getElementById(
+                "video-spinner-instance",
+            );
+            const rawVideoEl = document.getElementById("raw-video");
+            const phRawVideo = document.getElementById("ph-raw-video");
+            let rawVideoUrl = null;
+            let binaryVideoObjectUrl = null;
+            let instanceVideoObjectUrl = null;
+
+            function revokeOutputVideoUrls() {
+                if (binaryVideoObjectUrl) {
+                    URL.revokeObjectURL(binaryVideoObjectUrl);
+                    binaryVideoObjectUrl = null;
+                }
+                if (instanceVideoObjectUrl) {
+                    URL.revokeObjectURL(instanceVideoObjectUrl);
+                    instanceVideoObjectUrl = null;
+                }
+            }
+
+            function setVideoStatus(msg, state = "") {
+                videoStatusText.textContent = msg;
+                videoStatusBar.className =
+                    "status-bar" + (state ? " " + state : "");
+            }
+
+            videoFileInput.addEventListener("change", () => {
+                const [file] = videoFileInput.files;
+                if (!file) return;
+                videoFilenameEl.textContent = file.name;
+                videoRunButton.disabled = false;
+                setVideoStatus("Video ready — click Process Video.");
+                // Show raw video preview immediately from the local file
+                if (rawVideoUrl) URL.revokeObjectURL(rawVideoUrl);
+                rawVideoUrl = URL.createObjectURL(file);
+                rawVideoEl.src = rawVideoUrl;
+                rawVideoEl.style.display = "block";
+                phRawVideo.style.display = "none";
+                // Reset output panels for a fresh run
+                revokeOutputVideoUrls();
+                binaryVideoEl.style.display = "none";
+                binaryVideoEl.src = "";
+                instanceVideoEl.style.display = "none";
+                instanceVideoEl.src = "";
+                phBinaryVideo.style.display = "block";
+                phInstanceVideo.style.display = "block";
+                binaryVideoDownload.style.display = "none";
+                instanceVideoDownload.style.display = "none";
+            });
+
+            videoRunButton.addEventListener("click", async () => {
+                const [file] = videoFileInput.files;
+                if (!file) {
+                    setVideoStatus(
+                        "Please choose a video file first.",
+                        "error",
+                    );
+                    return;
+                }
+                const fd = new FormData();
+                fd.append("video", file);
+                videoRunButton.disabled = true;
+                revokeOutputVideoUrls();
+                binaryVideoEl.style.display = "none";
+                instanceVideoEl.style.display = "none";
+                binaryVideoEl.src = "";
+                instanceVideoEl.src = "";
+                binaryVideoDownload.style.display = "none";
+                instanceVideoDownload.style.display = "none";
+                videoSpinnerBinary.classList.add("visible");
+                videoSpinnerInstance.classList.add("visible");
+                phBinaryVideo.style.display = "none";
+                phInstanceVideo.style.display = "none";
+                setVideoStatus(
+                    "Processing video — please wait, this may take a while...",
+                    "loading",
+                );
+                try {
+                    const res = await fetch("/predict-video", {
+                        method: "POST",
+                        body: fd,
+                    });
+                    if (!res.ok) {
+                        let msg = "Video processing failed.";
+                        const txt = await res.text();
+                        try {
+                            const j = JSON.parse(txt);
+                            if (j.error) msg = j.error;
+                        } catch (_) {
+                            if (txt.trim()) msg = txt.trim();
+                        }
+                        throw new Error(msg);
+                    }
+                    const data = await res.json();
+                    const ts = Date.now();
+                    const [binRes, instRes] = await Promise.all([
+                        fetch(data.binary_video + "?t=" + ts),
+                        fetch(data.instance_video + "?t=" + ts),
+                    ]);
+                    if (!binRes.ok || !instRes.ok) {
+                        throw new Error(
+                            "Output videos were created but could not be loaded for preview.",
+                        );
+                    }
+                    const binBlob = await binRes.blob();
+                    const instBlob = await instRes.blob();
+                    const binForVideo = binBlob.type.startsWith("video/")
+                        ? binBlob
+                        : new Blob([binBlob], { type: "video/mp4" });
+                    const instForVideo = instBlob.type.startsWith("video/")
+                        ? instBlob
+                        : new Blob([instBlob], { type: "video/mp4" });
+                    binaryVideoObjectUrl = URL.createObjectURL(binForVideo);
+                    instanceVideoObjectUrl = URL.createObjectURL(instForVideo);
+                    binaryVideoEl.src = binaryVideoObjectUrl;
+                    instanceVideoEl.src = instanceVideoObjectUrl;
+                    binaryVideoDownload.href = binaryVideoObjectUrl;
+                    instanceVideoDownload.href = instanceVideoObjectUrl;
+                    binaryVideoEl.style.display = "block";
+                    instanceVideoEl.style.display = "block";
+                    binaryVideoDownload.style.display = "inline-block";
+                    instanceVideoDownload.style.display = "inline-block";
+                    setVideoStatus(
+                        "Video processing complete — review outputs below.",
+                    );
+                } catch (err) {
+                    phBinaryVideo.style.display = "block";
+                    phInstanceVideo.style.display = "block";
+                    setVideoStatus(
+                        err.message || "Video processing failed.",
+                        "error",
+                    );
+                } finally {
+                    videoSpinnerBinary.classList.remove("visible");
+                    videoSpinnerInstance.classList.remove("visible");
+                    videoRunButton.disabled = false;
+                }
+            });
+
+            // ── LIVE MODE ──────────────────────────────────────────────────
+            const startCameraBtn = document.getElementById("start-camera");
+            const stopCameraBtn = document.getElementById("stop-camera");
+            const fpsDisplay = document.getElementById("fps-display");
+            const liveVideoEl = document.getElementById("live-video");
+            const captureCanvas = document.getElementById("capture-canvas");
+            const liveBinaryImg = document.getElementById("live-binary");
+            const liveInstanceImg = document.getElementById("live-instance");
+            const phLiveFeed = document.getElementById("ph-live-feed");
+            const phLiveBinary = document.getElementById("ph-live-binary");
+            const phLiveInstance = document.getElementById("ph-live-instance");
+            const liveStatusText = document.getElementById("live-status-text");
+            const liveStatusBar = document.getElementById("live-status-bar");
+
+            let liveStream = null;
+            let liveRunning = false;
+            let fpsFrameCount = 0;
+            let fpsLastTime = 0;
+
+            function setLiveStatus(msg, state = "") {
+                liveStatusText.textContent = msg;
+                liveStatusBar.className =
+                    "status-bar" + (state ? " " + state : "");
+            }
+
+            async function startLiveCamera() {
+                try {
+                    liveStream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 320, height: 180 },
+                        audio: false,
+                    });
+                    liveVideoEl.srcObject = liveStream;
+                    liveVideoEl.style.display = "block";
+                    phLiveFeed.style.display = "none";
+                    startCameraBtn.disabled = true;
+                    stopCameraBtn.disabled = false;
+                    liveRunning = true;
+                    fpsFrameCount = 0;
+                    fpsLastTime = performance.now();
+                    setLiveStatus(
+                        "Live camera active — processing frames.",
+                        "loading",
+                    );
+                    runLiveLoop();
+                } catch (err) {
+                    setLiveStatus(
+                        "Camera access denied or unavailable: " + err.message,
+                        "error",
+                    );
+                }
+            }
+
+            function stopLiveCamera() {
+                liveRunning = false;
+                if (liveStream) {
+                    liveStream.getTracks().forEach((t) => t.stop());
+                    liveStream = null;
+                }
+                liveVideoEl.srcObject = null;
+                liveVideoEl.style.display = "none";
+                phLiveFeed.style.display = "block";
+                startCameraBtn.disabled = false;
+                stopCameraBtn.disabled = true;
+                fpsDisplay.textContent = "-- FPS";
+                setLiveStatus("Camera stopped.");
+            }
+
+            async function runLiveLoop() {
+                const ctx = captureCanvas.getContext("2d");
+                while (liveRunning) {
+                    if (!liveVideoEl.videoWidth) {
+                        await new Promise((r) => setTimeout(r, 100));
+                        continue;
+                    }
+                    ctx.drawImage(
+                        liveVideoEl,
+                        0,
+                        0,
+                        captureCanvas.width,
+                        captureCanvas.height,
+                    );
+                    const blob = await new Promise((resolve) =>
+                        captureCanvas.toBlob(resolve, "image/jpeg", 0.7),
+                    );
+                    if (!blob || !liveRunning) break;
+                    const fd = new FormData();
+                    fd.append("frame", blob, "frame.jpg");
+                    try {
+                        const res = await fetch("/predict-live-frame", {
+                            method: "POST",
+                            body: fd,
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            liveBinaryImg.src =
+                                "data:image/jpeg;base64," + data.binary_image;
+                            liveInstanceImg.src =
+                                "data:image/jpeg;base64," + data.instance_image;
+                            liveBinaryImg.style.display = "block";
+                            liveInstanceImg.style.display = "block";
+                            phLiveBinary.style.display = "none";
+                            phLiveInstance.style.display = "none";
+                            liveBinaryImg.classList.add("visible");
+                            liveInstanceImg.classList.add("visible");
+                            // FPS calculation
+                            fpsFrameCount++;
+                            const now = performance.now();
+                            const elapsed = (now - fpsLastTime) / 1000;
+                            if (elapsed >= 1.0) {
+                                fpsDisplay.textContent =
+                                    (fpsFrameCount / elapsed).toFixed(1) +
+                                    " FPS";
+                                fpsFrameCount = 0;
+                                fpsLastTime = now;
+                            }
+                        }
+                    } catch (e) {
+                        if (liveRunning)
+                            setLiveStatus("Frame error: " + e.message, "error");
+                    }
+                }
+            }
+
+            startCameraBtn.addEventListener("click", startLiveCamera);
+            stopCameraBtn.addEventListener("click", stopLiveCamera);
+
+            // ── CANVAS ANIMATION ───────────────────────────────────────────
+            (function () {
+                const canvas = document.getElementById("lanes-canvas");
+                const ctx = canvas.getContext("2d");
+                let W, H;
+
+                function resize() {
+                    W = canvas.width = window.innerWidth;
+                    H = canvas.height = window.innerHeight;
+                }
+                window.addEventListener("resize", resize);
+                resize();
+
+                const lanes = [];
+                for (let i = 0; i < 8; i++) {
+                    const pts = [];
+                    let x = (W / 9) * (i + 1) + (Math.random() - 0.5) * 80;
+                    let y = -100;
+                    for (let j = 0; j < 10; j++) {
+                        pts.push({ x: x + (Math.random() - 0.5) * 250, y: y });
+                        y += (H + 200) / 9;
+                    }
+                    lanes.push({ pts, offset: Math.random() * 1000 });
+                }
+
+                const TYPES = [
+                    "car",
+                    "car",
+                    "car",
+                    "truck",
+                    "truck",
+                    "bike",
+                    "bike",
+                    "bike",
+                ];
+                const vehicles = [];
+                for (let i = 0; i < 14; i++) {
+                    vehicles.push({
+                        lane: Math.floor(Math.random() * lanes.length),
+                        t: Math.random(),
+                        speed: 0.0003 + Math.random() * 0.0007,
+                        type: TYPES[Math.floor(Math.random() * TYPES.length)],
+                        color: [
+                            "#C41028",
+                            "#1A1A1A",
+                            "#5A5245",
+                            "#8A7652",
+                            "#333",
+                        ][Math.floor(Math.random() * 5)],
+                    });
+                }
+
+                function catmullRom(p0, p1, p2, p3, t) {
+                    const t2 = t * t,
+                        t3 = t2 * t;
+                    return {
+                        x:
+                            0.5 *
+                            (2 * p1.x +
+                                (-p0.x + p2.x) * t +
+                                (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
+                                (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+                        y:
+                            0.5 *
+                            (2 * p1.y +
+                                (-p0.y + p2.y) * t +
+                                (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
+                                (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
+                    };
+                }
+
+                function getPointOnLane(lane, t) {
+                    const pts = lane.pts,
+                        n = pts.length - 1;
+                    const seg = Math.min(Math.floor(t * n), n - 1);
+                    const lt = t * n - seg;
+                    return catmullRom(
+                        pts[Math.max(seg - 1, 0)],
+                        pts[seg],
+                        pts[Math.min(seg + 1, n)],
+                        pts[Math.min(seg + 2, n)],
+                        lt,
+                    );
+                }
+
+                function drawLane(lane, time) {
+                    ctx.beginPath();
+                    for (let t = 0; t <= 1; t += 0.005) {
+                        const p = getPointOnLane(lane, t);
+                        const sway =
+                            Math.sin(t * 4 + time * 0.0005 + lane.offset) * 15;
+                        if (t === 0) ctx.moveTo(p.x + sway, p.y);
+                        else ctx.lineTo(p.x + sway, p.y);
+                    }
+                    ctx.strokeStyle = "rgba(26,26,26,0.5)";
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([20, 30]);
+                    ctx.lineDashOffset = -time * 0.05;
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                function drawVehicle(v, time) {
+                    const lane = lanes[v.lane];
+                    const p = getPointOnLane(lane, v.t);
+                    const sway =
+                        Math.sin(v.t * 4 + time * 0.0005 + lane.offset) * 15;
+                    const x = p.x + sway,
+                        y = p.y;
+                    ctx.fillStyle = v.color;
+                    if (v.type === "car") {
+                        ctx.beginPath();
+                        ctx.roundRect(x - 7, y - 12, 14, 24, 4);
+                        ctx.fill();
+                        ctx.fillStyle = "rgba(200,191,168,0.5)";
+                        ctx.fillRect(x - 4, y - 7, 8, 5);
+                        ctx.fillStyle = "#111";
+                        ctx.fillRect(x - 8, y - 9, 2, 5);
+                        ctx.fillRect(x + 6, y - 9, 2, 5);
+                        ctx.fillRect(x - 8, y + 4, 2, 5);
+                        ctx.fillRect(x + 6, y + 4, 2, 5);
+                    } else if (v.type === "truck") {
+                        ctx.beginPath();
+                        ctx.roundRect(x - 9, y - 8, 18, 12, 3);
+                        ctx.fill();
+                        ctx.fillStyle =
+                            v.color === "#C41028" ? "#8a0c1e" : "#333";
+                        ctx.beginPath();
+                        ctx.roundRect(x - 10, y + 4, 20, 22, 2);
+                        ctx.fill();
+                        ctx.fillStyle = "rgba(200,191,168,0.5)";
+                        ctx.fillRect(x - 6, y - 5, 12, 5);
+                        ctx.fillStyle = "#111";
+                        ctx.fillRect(x - 11, y - 4, 2, 5);
+                        ctx.fillRect(x + 9, y - 4, 2, 5);
+                        ctx.fillRect(x - 11, y + 10, 2, 5);
+                        ctx.fillRect(x + 9, y + 10, 2, 5);
+                        ctx.fillRect(x - 11, y + 18, 2, 5);
+                        ctx.fillRect(x + 9, y + 18, 2, 5);
+                    } else if (v.type === "bike") {
+                        ctx.beginPath();
+                        ctx.roundRect(x - 3, y - 10, 6, 18, 3);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(x, y - 12, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = "#111";
+                        ctx.beginPath();
+                        ctx.arc(x, y - 14, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(x, y + 10, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    const glowR =
+                        v.type === "truck" ? 20 : v.type === "bike" ? 10 : 15;
+                    const grad = ctx.createRadialGradient(
+                        x,
+                        y - 12,
+                        0,
+                        x,
+                        y - 12,
+                        glowR,
+                    );
+                    grad.addColorStop(
+                        0,
+                        v.color === "#C41028"
+                            ? "rgba(196,16,40,0.2)"
+                            : "rgba(26,26,26,0.1)",
+                    );
+                    grad.addColorStop(1, "transparent");
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(x, y - 12, glowR, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                function animate(time) {
+                    ctx.clearRect(0, 0, W, H);
+                    lanes.forEach((l) => drawLane(l, time));
+                    vehicles.forEach((v) => {
+                        v.t += v.speed;
+                        if (v.t > 1) {
+                            v.t = 0;
+                            v.lane = Math.floor(Math.random() * lanes.length);
+                            v.speed = 0.0003 + Math.random() * 0.0007;
+                            v.type =
+                                TYPES[Math.floor(Math.random() * TYPES.length)];
+                        }
+                        drawVehicle(v, time);
+                    });
+                    requestAnimationFrame(animate);
+                }
+                requestAnimationFrame(animate);
+            })();
+        </script>
+    </body>
 </html>
