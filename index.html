@@ -11,13 +11,6 @@
         />
         <style>
             :root {
-                --bg: #ede4c8;
-                --bg-card: rgba(255, 255, 255, 0.88);
-                --red: #c41028;
-                --amber: #8a7652;
-                --text: #1a1a1a;
-                --muted: #5a5245;
-                --border: rgba(26, 26, 26, 0.12);
                 --dm-red: #c41028;
                 --dm-bone: #c8bfa8;
                 --dm-bone-light: #d4ccba;
@@ -26,12 +19,15 @@
                 --dm-white: #e8e0d0;
                 --dm-gray: #5a5245;
                 --dm-border: rgba(26, 26, 26, 0.12);
+
                 --font-brand: "Bebas Neue", sans-serif;
                 --font-body: "Outfit", sans-serif;
                 --font-mono: "JetBrains Mono", monospace;
-                --radius-sm: 6px;
+
+                --radius-sm: 8px;
                 --radius-md: 16px;
                 --radius-lg: 40px;
+
                 --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             }
 
@@ -42,20 +38,24 @@
                 margin: 0;
                 padding: 0;
             }
-
             html {
                 scroll-behavior: smooth;
             }
 
             body {
-                background: #ede4c8;
-                color: #1a1a1a;
+                background: var(--dm-bone);
+                background-image: url("images/parchment_bg.png");
+                background-size: cover;
+                background-attachment: fixed;
+                background-position: center;
+                color: var(--dm-black);
                 font-family: var(--font-body);
                 min-height: 100vh;
                 overflow-x: hidden;
                 line-height: 1.5;
             }
 
+            /* Vignette overlay to match logo aesthetic */
             body::before {
                 content: "";
                 position: fixed;
@@ -64,12 +64,12 @@
                 background: radial-gradient(
                     ellipse at center,
                     transparent 40%,
-                    rgba(0, 0, 0, 0.12) 100%
+                    rgba(0, 0, 0, 0.25) 100%
                 );
                 pointer-events: none;
             }
 
-            /* PAGE LOADER */
+            /* TRANSITION */
             .page-loader {
                 position: fixed;
                 inset: 0;
@@ -83,6 +83,7 @@
             .page-loader.ready {
                 transform: translateY(-100%);
             }
+
             .loader-text {
                 font-family: var(--font-brand);
                 font-size: 8vw;
@@ -99,14 +100,12 @@
                 }
             }
 
-            /* CANVAS */
-            #lanes-canvas {
+            .bg-graph {
                 position: fixed;
                 inset: 0;
                 z-index: 0;
                 pointer-events: none;
-                opacity: 0.4;
-                mix-blend-mode: multiply;
+                opacity: 0.3;
             }
 
             /* NAV */
@@ -116,19 +115,53 @@
                 left: 0;
                 right: 0;
                 z-index: 1000;
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                align-items: center;
+                padding: 32px 48px;
+            }
+
+            .nav-brand {
+                font-family: var(--font-brand);
+                font-size: 48px;
+                font-weight: 400;
+                color: var(--dm-red);
+                text-transform: uppercase;
+                letter-spacing: -0.01em;
+                line-height: 0.9;
+                text-align: center;
+                grid-column: 2;
+            }
+
+            /* Animated lanes canvas */
+            #lanes-canvas {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0.3;
+                mix-blend-mode: multiply;
+            }
+
+            .nav-left {
                 display: flex;
-                justify-content: flex-end;
                 align-items: center;
                 gap: 32px;
-                padding: 32px 48px;
-                background: transparent;
+                grid-column: 1;
+            }
+            .nav-right {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 32px;
+                grid-column: 3;
             }
 
             .nav-link {
                 font-family: var(--font-brand);
                 font-size: 16px;
                 text-transform: uppercase;
-                color: #1a1a1a;
+                color: var(--dm-black);
                 text-decoration: none;
                 position: relative;
                 letter-spacing: 0.05em;
@@ -158,7 +191,7 @@
                 background: transparent;
                 border: none;
                 cursor: pointer;
-                color: #1a1a1a;
+                color: var(--dm-black);
                 letter-spacing: 0.05em;
                 transition: var(--transition);
             }
@@ -173,261 +206,178 @@
                 text-align: center;
                 padding: 180px 48px 100px;
             }
+
             .hero-eyebrow {
                 font-family: var(--font-mono);
                 font-size: 11px;
                 letter-spacing: 0.3em;
                 text-transform: uppercase;
-                color: #8a7652;
+                color: var(--dm-gold);
                 margin-bottom: 32px;
             }
+
             h1 {
                 font-family: var(--font-brand);
                 font-size: clamp(6rem, 15vw, 18rem);
                 font-weight: 400;
                 line-height: 0.85;
                 letter-spacing: -0.04em;
-                color: #c41028;
+                color: var(--dm-red);
                 margin-bottom: 40px;
                 text-transform: uppercase;
             }
+
             h1 span {
                 display: inline;
-                color: #1a1a1a;
+                color: var(--dm-black);
             }
+
             .hero-desc {
                 font-family: var(--font-body);
                 font-size: 20px;
                 line-height: 1.6;
-                color: #5a5245;
+                color: var(--dm-gray);
                 max-width: 600px;
                 margin: 0 auto 64px;
                 font-weight: 300;
             }
+
             .hero-badges {
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 16px;
             }
+
             .badge {
                 font-family: var(--font-brand);
                 font-size: 14px;
                 letter-spacing: 0.1em;
                 padding: 8px 20px;
                 border-radius: 999px;
-                border: 1px solid rgba(26, 26, 26, 0.2);
-                color: #1a1a1a;
-                background: transparent;
+                border: 1px solid var(--dm-border);
+                color: var(--dm-black);
+                background: var(--dm-white);
                 text-transform: uppercase;
             }
 
-            /* TOOL WRAP */
+            /* TOOL */
             .tool-wrap {
                 position: relative;
                 z-index: 1;
-                max-width: 860px;
+                max-width: 1400px;
                 margin: 0 auto;
-                padding: 0 48px 80px;
+                padding: 64px 48px;
             }
 
-            /* CONTROLS BAR — Row 1: mode tabs left, upload trigger right */
-            .controls-bar {
+            .controls {
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                gap: 16px;
-                margin-bottom: 16px;
+                justify-content: center;
+                gap: 24px;
+                flex-wrap: wrap;
+                margin-bottom: 48px;
             }
 
-            /* FILENAME ROW */
-            .filename-row {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                margin-bottom: 12px;
-                min-height: 22px;
+            #file-input {
+                display: none;
             }
 
-            /* ACTION BAR — Row 2: full-width run button */
-            .action-bar {
-                margin-bottom: 20px;
-            }
-
-            /* MODE SELECTOR */
-            .mode-selector {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .btn-mode {
-                font-family: var(--font-brand);
-                font-size: 16px;
-                letter-spacing: 0.1em;
-                text-transform: uppercase;
-                padding: 10px 28px;
-                border-radius: 999px;
-                border: 1.5px solid var(--dm-border);
-                background: transparent;
-                color: var(--dm-gray);
-                cursor: pointer;
-                transition: var(--transition);
-            }
-            .btn-mode:hover {
-                color: #1a1a1a;
-                border-color: #1a1a1a;
-            }
-            .btn-mode.active {
-                background: var(--dm-red);
-                color: var(--dm-bone);
-                border-color: var(--dm-red);
-            }
-
-            /* UPLOAD BUTTON */
             .btn-upload {
                 display: inline-flex;
                 align-items: center;
-                gap: 10px;
-                padding: 10px 20px;
-                border: 1.5px solid rgba(26, 26, 26, 0.25);
-                border-radius: var(--radius-sm);
-                background: transparent;
-                color: #1a1a1a;
+                gap: 12px;
+                padding: 16px 32px;
+                border: 1.5px solid var(--dm-border);
+                border-radius: var(--radius-lg);
+                background: var(--dm-white);
+                color: var(--dm-black);
                 font-family: var(--font-brand);
-                font-size: 16px;
+                font-size: 18px;
                 text-transform: uppercase;
                 cursor: pointer;
                 transition: var(--transition);
-                letter-spacing: 0.05em;
             }
+
             .btn-upload:hover {
                 border-color: var(--dm-red);
                 color: var(--dm-red);
             }
 
-            /* RUN BUTTON */
-            #upload-form {
-                width: 100%;
-            }
             .btn-run {
-                display: flex;
+                display: inline-flex;
                 align-items: center;
-                justify-content: center;
                 gap: 12px;
-                padding: 18px 48px;
-                width: 100%;
+                padding: 16px 48px;
                 border: none;
-                border-radius: 6px;
-                background: #c41028;
-                color: #ede4c8;
+                border-radius: var(--radius-lg);
+                background: var(--dm-red);
+                color: var(--dm-bone);
                 font-family: var(--font-brand);
-                font-size: 20px;
+                font-size: 18px;
                 text-transform: uppercase;
                 cursor: pointer;
                 transition: var(--transition);
-                letter-spacing: 0.04em;
+                letter-spacing: 0.02em;
             }
+
             .btn-run:hover:not(:disabled) {
-                background: #1a1a1a;
+                background: var(--dm-black);
+                transform: scale(1.02);
             }
+
             .btn-run:disabled {
                 opacity: 0.4;
                 cursor: not-allowed;
             }
 
-            /* FILENAME TAG */
             .filename-tag {
                 font-family: var(--font-mono);
                 font-size: 12px;
                 color: var(--dm-gray);
-                padding: 4px 12px;
+                padding: 8px 16px;
                 border-radius: var(--radius-sm);
                 background: rgba(255, 255, 255, 0.4);
             }
 
-            /* STATUS BAR */
-            .status-bar {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-family: var(--font-mono);
-                font-size: 12px;
-                color: #5a5245;
-                letter-spacing: 0.05em;
-                margin-bottom: 20px;
-                padding: 12px 20px;
-                border-radius: var(--radius-sm);
-                background: rgba(26, 26, 26, 0.05);
-                border: 1px solid rgba(26, 26, 26, 0.1);
-            }
-            .status-bar.loading {
-                color: #8a7652;
-                border-color: rgba(138, 118, 82, 0.3);
-            }
-            .status-bar.error {
-                color: #c41028;
-                border-color: rgba(196, 16, 40, 0.25);
-            }
-            .sdot {
-                width: 7px;
-                height: 7px;
-                border-radius: 50%;
-                flex-shrink: 0;
-                background: #5a5245;
-            }
-            .status-bar.loading .sdot {
-                background: #8a7652;
-                animation: pulse 1.2s ease infinite;
-            }
-            .status-bar.error .sdot {
-                background: #c41028;
-            }
-            @keyframes pulse {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.3;
-                }
-            }
-
-            /* PREVIEW GRID */
             .preview-grid {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                gap: 24px;
+                gap: 32px;
             }
 
-            /* PANEL */
             .panel {
-                border-radius: var(--radius-md);
+                border-radius: var(--radius-lg);
                 overflow: hidden;
-                background: rgba(255, 255, 255, 0.88);
-                box-shadow: 0 4px 24px rgba(0, 0, 0, 0.09);
+                background: var(--dm-white);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
                 transition: var(--transition);
-                border: 1px solid rgba(26, 26, 26, 0.08);
+                border: 1px solid var(--dm-border);
             }
+
             .panel:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.13);
+                transform: translateY(-8px);
+                box-shadow: 0 40px 100px rgba(0, 0, 0, 0.15);
             }
+
             .panel-head {
                 padding: 16px 18px 14px;
-                border-bottom: 1px solid rgba(26, 26, 26, 0.08);
+                border-bottom: 1px solid var(--dm-border);
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                background: rgba(237, 228, 200, 0.5);
+                background: rgba(200, 191, 168, 0.4);
             }
+
             .panel-title {
                 font-family: var(--font-brand);
                 font-size: 18px;
                 font-weight: 400;
-                color: #1a1a1a;
+                color: var(--dm-black);
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
             }
+
             .panel-chip {
                 font-family: var(--font-mono);
                 font-size: 9px;
@@ -435,6 +385,7 @@
                 padding: 3px 9px;
                 border-radius: 3px;
             }
+
             .chip-raw {
                 background: rgba(26, 26, 26, 0.08);
                 color: var(--dm-gray);
@@ -451,26 +402,27 @@
                 border: 1px solid rgba(138, 118, 82, 0.3);
             }
 
-            /* IMAGE FRAME */
             .image-frame {
                 position: relative;
                 min-height: 280px;
                 display: grid;
                 place-items: center;
-                background: #e8e0d0;
+                background: var(--dm-bone-light);
                 overflow: hidden;
             }
+
             .image-frame img {
                 width: 100%;
                 height: 100%;
                 object-fit: contain;
                 display: none;
-                background: #e8e0d0;
+                background: var(--dm-bone-light);
             }
             .image-frame img.visible {
                 display: block;
                 animation: fadeIn 0.3s ease;
             }
+
             .overlay-img {
                 display: block !important;
                 position: absolute;
@@ -487,6 +439,7 @@
             .overlay-img.active {
                 opacity: 0.5;
             }
+
             .toggle-overlay {
                 font-family: var(--font-mono);
                 font-size: 10px;
@@ -509,6 +462,7 @@
                 color: var(--dm-white);
                 border-color: var(--dm-red);
             }
+
             @keyframes fadeIn {
                 from {
                     opacity: 0;
@@ -517,15 +471,17 @@
                     opacity: 1;
                 }
             }
+
             .ph {
                 font-family: var(--font-body);
                 font-size: 13px;
-                color: #5a5245;
+                color: var(--dm-gray);
                 text-align: center;
                 padding: 24px;
                 line-height: 1.8;
                 font-style: italic;
             }
+
             .spinner {
                 width: 38px;
                 height: 38px;
@@ -535,6 +491,7 @@
                 animation: spin 0.85s linear infinite;
                 display: none;
             }
+
             .spinner.visible {
                 display: block;
             }
@@ -542,93 +499,6 @@
                 to {
                     transform: rotate(360deg);
                 }
-            }
-
-            /* VIDEO MODE */
-            .video-panel {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-            .video-panel video {
-                width: 100%;
-                border-radius: var(--radius-sm);
-                background: #e8e0d0;
-                max-height: 240px;
-            }
-            .btn-download {
-                font-family: var(--font-mono);
-                font-size: 11px;
-                letter-spacing: 0.1em;
-                text-transform: uppercase;
-                padding: 6px 16px;
-                border-radius: 999px;
-                border: 1px solid var(--dm-border);
-                background: transparent;
-                color: var(--dm-gray);
-                cursor: pointer;
-                text-decoration: none;
-                display: inline-block;
-                transition: var(--transition);
-            }
-            .btn-download:hover {
-                color: var(--dm-red);
-                border-color: var(--dm-red);
-            }
-
-            /* LIVE MODE */
-            .live-controls {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 16px;
-                flex-wrap: wrap;
-            }
-            .btn-live {
-                font-family: var(--font-brand);
-                font-size: 15px;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-                padding: 10px 28px;
-                border-radius: 999px;
-                border: 1.5px solid;
-                cursor: pointer;
-                transition: var(--transition);
-            }
-            .btn-start {
-                background: var(--dm-red);
-                color: var(--dm-bone);
-                border-color: var(--dm-red);
-            }
-            .btn-start:hover {
-                opacity: 0.85;
-            }
-            .btn-stop {
-                background: transparent;
-                color: #1a1a1a;
-                border-color: var(--dm-border);
-            }
-            .btn-stop:hover {
-                color: #1a1a1a;
-                border-color: #1a1a1a;
-            }
-            .btn-stop:disabled {
-                opacity: 0.4;
-                cursor: not-allowed;
-            }
-            .fps-badge {
-                font-family: var(--font-mono);
-                font-size: 12px;
-                color: #8a7652;
-                letter-spacing: 0.1em;
-                padding: 6px 14px;
-                border: 1px solid rgba(138, 118, 82, 0.4);
-                border-radius: 999px;
-            }
-            .live-video-frame {
-                width: 100%;
-                border-radius: var(--radius-sm);
-                background: #e8e0d0;
             }
 
             /* THEORY OVERLAY */
@@ -642,10 +512,12 @@
                 pointer-events: none;
                 transition: opacity 0.5s ease;
             }
+
             .overlay-backdrop.open {
                 opacity: 1;
                 pointer-events: all;
             }
+
             .theory-panel {
                 position: fixed;
                 inset: 0;
@@ -657,9 +529,11 @@
                 transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
                 overflow: hidden;
             }
+
             .theory-panel.open {
                 transform: translateY(0);
             }
+
             .tp-header {
                 padding: 48px;
                 border-bottom: 1.5px solid var(--dm-red);
@@ -668,6 +542,7 @@
                 justify-content: space-between;
                 flex-shrink: 0;
             }
+
             .tp-brand {
                 font-family: var(--font-brand);
                 font-size: 80px;
@@ -675,6 +550,7 @@
                 line-height: 0.8;
                 text-transform: uppercase;
             }
+
             .tp-close {
                 font-family: var(--font-brand);
                 font-size: 24px;
@@ -689,6 +565,7 @@
             .tp-close:hover {
                 color: var(--dm-red);
             }
+
             .tp-tabs {
                 display: flex;
                 gap: 40px;
@@ -698,6 +575,7 @@
                 align-items: center;
                 flex-shrink: 0;
             }
+
             .tab-btn {
                 font-family: var(--font-brand);
                 font-size: 16px;
@@ -725,6 +603,88 @@
                 height: 3px;
                 background: var(--dm-red);
             }
+
+            .tab-pane {
+                display: none;
+                animation: fadeIn 0.5s ease;
+            }
+            .tab-pane.active {
+                display: block;
+            }
+
+            /* Methodology Content Styling */
+            .tc-content h3 {
+                font-family: var(--font-brand);
+                font-size: 32px;
+                margin: 40px 0 16px;
+                text-transform: uppercase;
+                color: var(--dm-black);
+            }
+            .tc-content p {
+                margin-bottom: 20px;
+            }
+            .tc-content ul {
+                list-style: none;
+                margin-bottom: 32px;
+            }
+            .tc-content li {
+                position: relative;
+                padding-left: 24px;
+                margin-bottom: 12px;
+                font-family: var(--font-body);
+                font-size: 16px;
+                font-weight: 300;
+                color: var(--dm-gray);
+            }
+            .tc-content li::before {
+                content: "—";
+                position: absolute;
+                left: 0;
+                color: var(--dm-red);
+            }
+            .tc-content code {
+                font-family: var(--font-mono);
+                font-size: 14px;
+                background: rgba(196, 16, 40, 0.08);
+                padding: 2px 6px;
+                border-radius: 4px;
+                color: var(--dm-red);
+            }
+            .tc-content table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 24px 0 40px;
+                background: rgba(255, 255, 255, 0.4);
+                border-radius: var(--radius-sm);
+                overflow: hidden;
+            }
+            .tc-content th {
+                background: var(--dm-bone);
+                padding: 12px 16px;
+                text-align: left;
+                font-family: var(--font-brand);
+                font-size: 14px;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+            }
+            .tc-content td {
+                padding: 12px 16px;
+                border-bottom: 1px solid var(--dm-border);
+                font-family: var(--font-body);
+                font-size: 14px;
+            }
+            .tc-content pre {
+                background: var(--dm-black);
+                color: #fff;
+                padding: 24px;
+                border-radius: var(--radius-md);
+                font-family: var(--font-mono);
+                font-size: 13px;
+                line-height: 1.6;
+                overflow-x: auto;
+                margin: 20px 0 32px;
+            }
+
             .tp-body {
                 flex: 1;
                 overflow-y: auto;
@@ -733,6 +693,7 @@
                 grid-template-columns: 300px 1fr;
                 gap: 80px;
             }
+
             .tc-sidebar {
                 position: sticky;
                 top: 0;
@@ -740,6 +701,7 @@
             .tc-content {
                 max-width: 800px;
             }
+
             .tc-h2 {
                 font-family: var(--font-brand);
                 font-size: 64px;
@@ -757,6 +719,7 @@
                 text-transform: uppercase;
                 letter-spacing: 0.1em;
             }
+
             .tc-p {
                 font-family: var(--font-body);
                 font-size: 16px;
@@ -769,12 +732,14 @@
                 font-weight: 600;
                 color: var(--dm-red);
             }
+
             .card-grid {
                 display: grid;
                 grid-template-columns: 1fr;
                 gap: 24px;
                 margin-bottom: 40px;
             }
+
             .tc-card {
                 padding: 32px;
                 border-radius: var(--radius-md);
@@ -785,6 +750,7 @@
             .tc-card:hover {
                 border-color: var(--dm-red);
             }
+
             .tc-card-title {
                 font-family: var(--font-brand);
                 font-size: 24px;
@@ -798,130 +764,144 @@
                 color: var(--dm-gray);
                 line-height: 1.6;
             }
+
             .tc-tag {
                 display: inline-block;
                 margin-top: 8px;
-                font-family: var(--font-mono);
+                font-family: var(--mono);
                 font-size: 9px;
                 letter-spacing: 0.08em;
                 padding: 3px 9px;
                 border-radius: 3px;
                 background: rgba(184, 134, 11, 0.12);
-                color: var(--dm-gold);
+                color: var(--gold);
                 border: 1px solid rgba(184, 134, 11, 0.25);
             }
+
             .tc-tag.red {
-                background: rgba(196, 16, 40, 0.1);
-                color: var(--dm-red);
-                border-color: rgba(196, 16, 40, 0.25);
+                background: rgba(122, 31, 46, 0.1);
+                color: var(--burgundy);
+                border-color: rgba(122, 31, 46, 0.25);
             }
+
             .formula-block {
                 background: rgba(255, 255, 255, 0.7);
-                border: 1px solid var(--dm-border);
-                border-left: 3px solid var(--dm-gold);
+                border: 1px solid var(--border);
+                border-left: 3px solid var(--gold);
                 border-radius: 8px;
                 padding: 14px 18px;
                 margin-bottom: 14px;
             }
+
             .formula-block.red {
-                border-left-color: var(--dm-red);
+                border-left-color: var(--burgundy);
             }
+
             .formula-name {
-                font-family: var(--font-brand);
+                font-family: var(--serif);
                 font-size: 14px;
                 font-weight: 700;
-                color: var(--dm-black);
+                color: var(--text);
                 margin-bottom: 5px;
             }
             .formula-eq {
-                font-family: var(--font-mono);
+                font-family: var(--mono);
                 font-size: 12px;
-                color: var(--dm-gold);
+                color: var(--gold);
                 margin-bottom: 7px;
             }
             .formula-block.red .formula-eq {
-                color: var(--dm-red);
+                color: var(--burgundy);
             }
             .formula-desc {
-                font-family: var(--font-body);
+                font-family: var(--body);
                 font-size: 12.5px;
-                color: var(--dm-gray);
+                color: var(--muted);
                 line-height: 1.7;
             }
             .formula-desc strong {
-                color: var(--dm-black);
+                color: var(--text2);
             }
+
             .steps {
                 display: flex;
                 flex-direction: column;
             }
+
             .step {
                 display: flex;
                 gap: 16px;
                 align-items: flex-start;
                 padding: 14px 0;
-                border-bottom: 1px solid var(--dm-border);
+                border-bottom: 1px solid var(--border);
             }
+
             .step:last-child {
                 border-bottom: none;
             }
+
             .step-num {
                 flex-shrink: 0;
                 width: 28px;
                 height: 28px;
                 border-radius: 50%;
-                border: 1.5px solid var(--dm-red);
+                border: 1.5px solid var(--burgundy);
                 display: grid;
                 place-items: center;
-                font-family: var(--font-mono);
+                font-family: var(--mono);
                 font-size: 11px;
                 font-weight: 500;
-                color: var(--dm-red);
+                color: var(--burgundy);
                 margin-top: 1px;
             }
+
             .step-title {
-                font-family: var(--font-brand);
+                font-family: var(--serif);
                 font-size: 14px;
                 font-weight: 700;
-                color: var(--dm-black);
+                color: var(--text);
                 margin-bottom: 3px;
             }
             .step-desc {
-                font-family: var(--font-body);
+                font-family: var(--body);
                 font-size: 12.5px;
-                color: var(--dm-gray);
+                color: var(--muted);
                 line-height: 1.7;
             }
             .step-desc code {
-                font-family: var(--font-mono);
+                font-family: var(--mono);
                 font-size: 11px;
-                background: rgba(196, 16, 40, 0.08);
+                background: rgba(122, 31, 46, 0.08);
                 padding: 1px 4px;
                 border-radius: 3px;
             }
+
             .metrics-table {
                 width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 20px;
             }
+
             .metrics-table th {
-                font-family: var(--font-mono);
+                font-family: var(--mono);
                 font-size: 10px;
                 letter-spacing: 0.14em;
                 text-transform: uppercase;
-                color: var(--dm-gray);
+                color: var(--muted);
                 padding: 10px 12px;
                 text-align: left;
-                border-bottom: 1px solid var(--dm-border);
+                border-bottom: 1px solid var(--border2);
                 background: rgba(255, 255, 255, 0.5);
             }
+
             .metrics-table td {
-                font-family: var(--font-body);
+                font-family: var(--body);
                 font-size: 13px;
-                color: var(--dm-black);
+                color: var(--text2);
                 padding: 11px 12px;
-                border-bottom: 1px solid var(--dm-border);
+                border-bottom: 1px solid var(--border);
             }
+
             .metrics-table tr:hover td {
                 background: rgba(255, 255, 255, 0.5);
             }
@@ -929,12 +909,13 @@
                 color: #1a7a4a;
                 font-weight: 600;
             }
+
             .cite-link {
                 display: flex;
                 align-items: flex-start;
                 gap: 14px;
                 padding: 14px 16px;
-                border: 1px solid var(--dm-border);
+                border: 1px solid var(--border);
                 border-radius: 10px;
                 background: rgba(255, 255, 255, 0.5);
                 margin-bottom: 12px;
@@ -943,81 +924,245 @@
                     border-color 0.2s,
                     background 0.2s;
             }
+
             .cite-link:hover {
-                border-color: var(--dm-red);
-                background: rgba(196, 16, 40, 0.04);
+                border-color: var(--burgundy);
+                background: rgba(122, 31, 46, 0.04);
             }
+
             .cite-num {
                 flex-shrink: 0;
-                font-family: var(--font-mono);
+                font-family: var(--mono);
                 font-size: 11px;
-                color: var(--dm-gold);
+                color: var(--gold);
                 margin-top: 2px;
             }
             .cite-title {
-                font-family: var(--font-brand);
+                font-family: var(--serif);
                 font-size: 13.5px;
                 font-weight: 700;
-                color: var(--dm-red);
+                color: var(--burgundy);
                 margin-bottom: 3px;
             }
             .cite-meta {
-                font-family: var(--font-body);
+                font-family: var(--body);
                 font-size: 12px;
-                color: var(--dm-gray);
+                color: var(--muted);
                 font-style: italic;
             }
+
             .divider {
                 height: 1px;
-                background: var(--dm-border);
+                background: var(--border);
                 margin: 22px 0;
             }
 
-            /* TAB PANES */
-            .tab-pane {
-                display: none;
+            /* STATUS BAR */
+            .status-bar {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-family: var(--font-mono);
+                font-size: 12px;
+                color: var(--dm-gray);
+                letter-spacing: 0.05em;
+                margin-bottom: 40px;
+                padding: 12px 20px;
+                border-radius: var(--radius-sm);
+                background: rgba(255, 255, 255, 0.35);
+                border: 1px solid var(--dm-border);
             }
-            .tab-pane.active {
-                display: block;
+            .status-bar.loading {
+                color: var(--dm-gold);
+                border-color: rgba(138, 118, 82, 0.3);
+            }
+            .status-bar.error {
+                color: var(--dm-red);
+                border-color: rgba(196, 16, 40, 0.25);
+            }
+            .sdot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                background: var(--dm-gray);
+            }
+            .status-bar.loading .sdot {
+                background: var(--dm-gold);
+                animation: pulse 1.2s ease infinite;
+            }
+            .status-bar.error .sdot {
+                background: var(--dm-red);
+            }
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.3;
+                }
             }
 
             /* RESPONSIVE */
             @media (max-width: 768px) {
                 nav {
-                    padding: 16px 20px;
-                    gap: 16px;
+                    padding: 0 20px;
                 }
                 .hero {
-                    padding: 100px 20px 60px;
+                    padding: 48px 20px 40px;
                 }
                 .tool-wrap {
-                    padding: 0 20px 48px;
+                    padding: 32px 20px 48px;
                 }
                 .preview-grid {
                     grid-template-columns: 1fr;
                 }
-                .controls-bar {
-                    flex-wrap: wrap;
+                .card-grid {
+                    grid-template-columns: 1fr;
                 }
                 .theory-panel {
                     width: 100vw;
                 }
                 .tp-body {
-                    grid-template-columns: 1fr;
                     padding: 20px;
-                    gap: 40px;
                 }
                 .tp-tabs {
                     padding: 12px 20px;
-                    gap: 20px;
-                    overflow-x: auto;
                 }
                 .tp-header {
                     padding: 20px;
                 }
-                .tc-sidebar {
-                    position: static;
-                }
+            }
+
+            /* ── MODE SELECTOR ─────────────────────────────────────────── */
+            .mode-selector {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                margin-bottom: 40px;
+            }
+            .btn-mode {
+                font-family: var(--font-brand);
+                font-size: 16px;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                padding: 10px 28px;
+                border-radius: 999px;
+                border: 1.5px solid var(--dm-border);
+                background: transparent;
+                color: var(--dm-gray);
+                cursor: pointer;
+                transition: var(--transition);
+            }
+            .btn-mode:hover {
+                color: var(--dm-black);
+                border-color: var(--dm-black);
+            }
+            .btn-mode.active {
+                background: var(--dm-red);
+                color: var(--dm-bone);
+                border-color: var(--dm-red);
+            }
+
+            /* ── VIDEO MODE ────────────────────────────────────────────── */
+            .video-controls {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 24px;
+                flex-wrap: wrap;
+                margin-bottom: 48px;
+            }
+            #video-file-input {
+                display: none;
+            }
+            .video-panel {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .video-panel video {
+                width: 100%;
+                border-radius: var(--radius-sm);
+                background: #111;
+                max-height: 240px;
+            }
+            .btn-download {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                padding: 6px 16px;
+                border-radius: 999px;
+                border: 1px solid var(--dm-border);
+                background: transparent;
+                color: var(--dm-gray);
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-block;
+                transition: var(--transition);
+            }
+            .btn-download:hover {
+                color: var(--dm-red);
+                border-color: var(--dm-red);
+            }
+
+            /* ── LIVE MODE ─────────────────────────────────────────────── */
+            .live-controls {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                margin-bottom: 48px;
+            }
+            .btn-live {
+                font-family: var(--font-brand);
+                font-size: 15px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                padding: 10px 28px;
+                border-radius: 999px;
+                border: 1.5px solid;
+                cursor: pointer;
+                transition: var(--transition);
+            }
+            .btn-start {
+                background: var(--dm-red);
+                color: var(--dm-bone);
+                border-color: var(--dm-red);
+            }
+            .btn-start:hover {
+                opacity: 0.85;
+            }
+            .btn-stop {
+                background: transparent;
+                color: var(--dm-gray);
+                border-color: var(--dm-border);
+            }
+            .btn-stop:hover {
+                color: var(--dm-black);
+                border-color: var(--dm-black);
+            }
+            .btn-stop:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            .fps-badge {
+                font-family: var(--font-mono);
+                font-size: 12px;
+                color: var(--dm-gold);
+                letter-spacing: 0.1em;
+                padding: 6px 14px;
+                border: 1px solid var(--dm-border);
+                border-radius: 999px;
+            }
+            .live-video-frame {
+                width: 100%;
+                border-radius: var(--radius-sm);
+                background: #111;
             }
         </style>
     </head>
@@ -1039,12 +1184,10 @@
                 padding: 32px 48px;
             "
         >
-            <a href="#" class="nav-link">Studio</a>
-            <a href="#" class="nav-link">Project</a>
             <button class="btn-theory-trigger" id="openTheory">
                 Methodology
             </button>
-            <a href="#" class="nav-link">Contact</a>
+            <a href="https://github.com/Siddh-456/Lane-Detection" class="nav-link" target="_blank" rel="noopener">GitHub</a>
         </nav>
 
         <!-- HERO -->
@@ -1052,7 +1195,7 @@
             <div class="hero-eyebrow">
                 Deep Learning · Autonomous Driving · Instance Segmentation
             </div>
-            <h1>see<span>lane</span></h1>
+            <h1>see <span>lane</span></h1>
             <p class="hero-desc">
                 Experience the future of computer vision. A high-performance
                 lane detection pipeline delivering surgical precision in
@@ -1069,50 +1212,168 @@
 
         <!-- TOOL -->
         <main class="tool-wrap">
-            <!-- ROW 1: mode tabs (left) + upload trigger (right) -->
-            <div class="controls-bar">
-                <div class="mode-selector">
-                    <button class="btn-mode active" data-mode="photo">
-                        Photo
-                    </button>
-                    <button class="btn-mode" data-mode="video">Video</button>
-                    <button class="btn-mode" data-mode="live">Live</button>
-                </div>
+            <!-- MODE SELECTOR -->
+            <div class="mode-selector">
+                <button class="btn-mode active" data-mode="photo">Photo</button>
+                <button class="btn-mode" data-mode="video">Video</button>
+                <button class="btn-mode" data-mode="live">Live</button>
+            </div>
 
-                <!-- Photo upload trigger -->
-                <div id="photo-trigger">
-                    <input
-                        id="file-input"
-                        name="image"
-                        type="file"
-                        accept="image/*"
-                        style="display: none"
-                    />
-                    <label for="file-input" class="btn-upload">
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
+            <!-- ── PHOTO CONTROLS ──────────────────────────────────────── -->
+            <div id="photo-controls">
+                <form id="upload-form">
+                    <div class="controls">
+                        <input
+                            id="file-input"
+                            name="image"
+                            type="file"
+                            accept="image/*"
+                        />
+                        <label for="file-input" class="btn-upload">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                                />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            Choose Image
+                        </label>
+                        <button type="submit" class="btn-run" id="run-button">
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                            >
+                                <polygon points="5 3 19 12 5 21 5 3" />
+                            </svg>
+                            Run Detection
+                        </button>
+                        <span class="filename-tag" id="filename"
+                            >No file selected</span
                         >
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                            <polyline points="17 8 12 3 7 8" />
-                            <line x1="12" y1="3" x2="12" y2="15" />
-                        </svg>
-                        Choose Image
-                    </label>
+                    </div>
+                </form>
+
+                <div class="status-bar" id="status-bar">
+                    <span class="sdot"></span>
+                    <span id="status-text">Select an image to begin.</span>
                 </div>
 
-                <!-- Video upload trigger -->
-                <div id="video-trigger" style="display: none">
+                <div class="preview-grid" id="photo-grid">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Uploaded Image</span>
+                            <span class="panel-chip chip-raw">RAW</span>
+                        </div>
+                        <div class="image-frame">
+                            <img id="input-preview" alt="Uploaded image" />
+                            <div class="ph" id="ph-input">
+                                Your selected image<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel" id="binary-panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Binary Segmentation</span>
+                            <div
+                                style="
+                                    display: flex;
+                                    gap: 8px;
+                                    align-items: center;
+                                "
+                            >
+                                <button
+                                    class="toggle-overlay"
+                                    id="toggle-binary"
+                                    title="Toggle original image overlay"
+                                >
+                                    Overlay
+                                </button>
+                                <span class="panel-chip chip-binary"
+                                    >FOCAL LOSS</span
+                                >
+                            </div>
+                        </div>
+                        <div class="image-frame">
+                            <img
+                                id="binary-preview"
+                                alt="Binary segmentation"
+                            />
+                            <img
+                                class="overlay-img"
+                                id="binary-overlay"
+                                alt="Original overlay"
+                            />
+                            <div class="spinner" id="spinner"></div>
+                            <div class="ph" id="ph-binary">
+                                Binary lane mask<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel" id="instance-panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Instance Segmentation</span
+                            >
+                            <div
+                                style="
+                                    display: flex;
+                                    gap: 8px;
+                                    align-items: center;
+                                "
+                            >
+                                <button
+                                    class="toggle-overlay"
+                                    id="toggle-instance"
+                                    title="Toggle original image overlay"
+                                >
+                                    Overlay
+                                </button>
+                                <span class="panel-chip chip-instance"
+                                    >DISC. LOSS</span
+                                >
+                            </div>
+                        </div>
+                        <div class="image-frame">
+                            <img
+                                id="instance-preview"
+                                alt="Instance segmentation"
+                            />
+                            <img
+                                class="overlay-img"
+                                id="instance-overlay"
+                                alt="Original overlay"
+                            />
+                            <div class="spinner" id="spinner-instance"></div>
+                            <div class="ph" id="ph-instance">
+                                Instance segmentation<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── VIDEO CONTROLS ─────────────────────────────────────── -->
+            <div id="video-controls" style="display: none">
+                <div class="video-controls">
                     <input
                         id="video-file-input"
                         name="video"
                         type="file"
                         accept=".mp4,.avi,.mov,.mkv"
-                        style="display: none"
                     />
                     <label for="video-file-input" class="btn-upload">
                         <svg
@@ -1129,53 +1390,7 @@
                         </svg>
                         Choose Video
                     </label>
-                </div>
-
-                <!-- Live trigger: just FPS badge -->
-                <div id="live-trigger" style="display: none">
-                    <span class="fps-badge" id="fps-display">-- FPS</span>
-                </div>
-            </div>
-
-            <!-- FILENAME ROW -->
-            <div class="filename-row">
-                <span class="filename-tag" id="filename">No file selected</span>
-                <span
-                    class="filename-tag"
-                    id="video-filename"
-                    style="display: none"
-                    >No file selected</span
-                >
-            </div>
-
-            <!-- ROW 2: action button (full width) -->
-            <div class="action-bar">
-                <!-- Photo -->
-                <div id="photo-action">
-                    <form id="upload-form" style="width: 100%">
-                        <button type="submit" class="btn-run" id="run-button">
-                            <svg
-                                width="13"
-                                height="13"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2.5"
-                            >
-                                <polygon points="5 3 19 12 5 21 5 3" />
-                            </svg>
-                            Run Detection
-                        </button>
-                    </form>
-                </div>
-                <!-- Video -->
-                <div id="video-action" style="display: none; width: 100%">
-                    <button
-                        class="btn-run"
-                        id="video-run-button"
-                        disabled
-                        style="width: 100%"
-                    >
+                    <button class="btn-run" id="video-run-button" disabled>
                         <svg
                             width="13"
                             height="13"
@@ -1188,259 +1403,182 @@
                         </svg>
                         Process Video
                     </button>
+                    <span class="filename-tag" id="video-filename"
+                        >No file selected</span
+                    >
                 </div>
-                <!-- Live -->
-                <div
-                    id="live-action"
-                    class="live-controls"
-                    style="display: none"
-                >
+
+                <div class="status-bar" id="video-status-bar">
+                    <span class="sdot"></span>
+                    <span id="video-status-text"
+                        >Select a video file to begin.</span
+                    >
+                </div>
+
+                <div class="preview-grid" id="video-grid">
+                    <div class="panel video-panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Original Video</span>
+                            <span class="panel-chip chip-raw">RAW</span>
+                        </div>
+                        <div
+                            class="image-frame"
+                            style="height: auto; padding: 0;"
+                        >
+                            <video
+                                id="raw-video"
+                                controls
+                                style="
+                                    display: none;
+                                    width: 100%;
+                                    border-radius: var(--radius-sm);
+                                "
+                            ></video>
+                            <div class="ph" id="ph-raw-video">
+                                Uploaded video<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel video-panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Binary Segmentation Video</span
+                            >
+                            <span class="panel-chip chip-binary"
+                                >FOCAL LOSS</span
+                            >
+                        </div>
+                        <div
+                            class="image-frame"
+                            style="height: auto; padding: 0;"
+                        >
+                            <video
+                                id="binary-video"
+                                controls
+                                style="display: none"
+                            ></video>
+                            <div class="ph" id="ph-binary-video">
+                                Binary output video<br />will appear here.
+                            </div>
+                            <div
+                                class="spinner"
+                                id="video-spinner-binary"
+                            ></div>
+                        </div>
+
+                    </div>
+
+                    <div class="panel video-panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Instance Segmentation Video</span
+                            >
+                            <span class="panel-chip chip-instance"
+                                >DISC. LOSS</span
+                            >
+                        </div>
+                        <div
+                            class="image-frame"
+                            style="height: auto; padding: 0;"
+                        >
+                            <video
+                                id="instance-video"
+                                controls
+                                style="display: none"
+                            ></video>
+                            <div class="ph" id="ph-instance-video">
+                                Instance output video<br />will appear here.
+                            </div>
+                            <div
+                                class="spinner"
+                                id="video-spinner-instance"
+                            ></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── LIVE CONTROLS ──────────────────────────────────────── -->
+            <div id="live-controls" style="display: none">
+                <div class="live-controls">
                     <button class="btn-live btn-start" id="start-camera">
                         Start Camera
                     </button>
                     <button class="btn-live btn-stop" id="stop-camera" disabled>
                         Stop Camera
                     </button>
+                    <span class="fps-badge" id="fps-display">-- FPS</span>
                 </div>
-            </div>
 
-            <!-- STATUS BARS -->
-            <div class="status-bar" id="status-bar">
-                <span class="sdot"></span>
-                <span id="status-text">Select an image to begin.</span>
-            </div>
-            <div class="status-bar" id="video-status-bar" style="display: none">
-                <span class="sdot"></span>
-                <span id="video-status-text"
-                    >Select a video file to begin.</span
-                >
-            </div>
-            <div class="status-bar" id="live-status-bar" style="display: none">
-                <span class="sdot"></span>
-                <span id="live-status-text">Click Start Camera to begin.</span>
-            </div>
+                <div class="status-bar" id="live-status-bar">
+                    <span class="sdot"></span>
+                    <span id="live-status-text"
+                        >Click Start Camera to begin.</span
+                    >
+                </div>
 
-            <!-- PHOTO OUTPUT GRID -->
-            <div class="preview-grid" id="photo-grid">
-                <div class="panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Uploaded Image</span>
-                        <span class="panel-chip chip-raw">RAW</span>
-                    </div>
-                    <div class="image-frame">
-                        <img id="input-preview" alt="Uploaded image" />
-                        <div class="ph" id="ph-input">
-                            Your selected image<br />will appear here.
+                <div class="preview-grid" id="live-grid">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Live Camera Feed</span>
+                            <span class="panel-chip chip-raw">RAW</span>
                         </div>
-                    </div>
-                </div>
-
-                <div class="panel" id="binary-panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Binary Segmentation</span>
                         <div
-                            style="display: flex; gap: 8px; align-items: center"
+                            class="image-frame"
+                            style="height: auto; padding: 8px"
                         >
-                            <button class="toggle-overlay" id="toggle-binary">
-                                Overlay
-                            </button>
-                            <span class="panel-chip chip-binary"
-                                >FOCAL LOSS</span
+                            <video
+                                id="live-video"
+                                autoplay
+                                muted
+                                playsinline
+                                class="live-video-frame"
+                                style="display: none"
+                            ></video>
+                            <div class="ph" id="ph-live-feed">
+                                Camera feed<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Binary Segmentation</span>
+                            <span class="panel-chip chip-binary">LIVE</span>
+                        </div>
+                        <div class="image-frame">
+                            <img id="live-binary" alt="Live binary" />
+                            <div class="ph" id="ph-live-binary">
+                                Live binary output<br />will appear here.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title"
+                                >Instance Segmentation</span
                             >
+                            <span class="panel-chip chip-instance">LIVE</span>
                         </div>
-                    </div>
-                    <div class="image-frame">
-                        <img id="binary-preview" alt="Binary segmentation" />
-                        <img
-                            class="overlay-img"
-                            id="binary-overlay"
-                            alt="Original overlay"
-                        />
-                        <div class="spinner" id="spinner"></div>
-                        <div class="ph" id="ph-binary">
-                            Binary lane mask<br />will appear here.
+                        <div class="image-frame">
+                            <img id="live-instance" alt="Live instance" />
+                            <div class="ph" id="ph-live-instance">
+                                Live instance output<br />will appear here.
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="panel" id="instance-panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Instance Segmentation</span>
-                        <div
-                            style="display: flex; gap: 8px; align-items: center"
-                        >
-                            <button class="toggle-overlay" id="toggle-instance">
-                                Overlay
-                            </button>
-                            <span class="panel-chip chip-instance"
-                                >DISC. LOSS</span
-                            >
-                        </div>
-                    </div>
-                    <div class="image-frame">
-                        <img
-                            id="instance-preview"
-                            alt="Instance segmentation"
-                        />
-                        <img
-                            class="overlay-img"
-                            id="instance-overlay"
-                            alt="Original overlay"
-                        />
-                        <div class="spinner" id="spinner-instance"></div>
-                        <div class="ph" id="ph-instance">
-                            Instance segmentation<br />will appear here.
-                        </div>
-                    </div>
-                </div>
+                <canvas
+                    id="capture-canvas"
+                    width="320"
+                    height="180"
+                    style="display: none"
+                ></canvas>
             </div>
-
-            <!-- VIDEO OUTPUT GRID -->
-            <div class="preview-grid" id="video-grid" style="display: none">
-                <div class="panel video-panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Original Video</span>
-                        <span class="panel-chip chip-raw">RAW</span>
-                    </div>
-                    <div
-                        class="image-frame"
-                        style="height: auto; padding: 12px"
-                    >
-                        <video
-                            id="raw-video"
-                            controls
-                            style="
-                                display: none;
-                                width: 100%;
-                                border-radius: 6px;
-                            "
-                        ></video>
-                        <div class="ph" id="ph-raw-video">
-                            Uploaded video<br />will appear here.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel video-panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Binary Video</span>
-                        <span class="panel-chip chip-binary">FOCAL LOSS</span>
-                    </div>
-                    <div
-                        class="image-frame"
-                        style="height: auto; padding: 12px"
-                    >
-                        <video
-                            id="binary-video"
-                            controls
-                            style="
-                                display: none;
-                                width: 100%;
-                                border-radius: 6px;
-                            "
-                        ></video>
-                        <div class="ph" id="ph-binary-video">
-                            Binary output video<br />will appear here.
-                        </div>
-                        <div class="spinner" id="video-spinner-binary"></div>
-                    </div>
-                    <a
-                        id="binary-video-download"
-                        class="btn-download"
-                        style="display: none; margin: 8px 0 0 0"
-                        download="binary_lanes.mp4"
-                        >Download Binary</a
-                    >
-                </div>
-
-                <div class="panel video-panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Instance Video</span>
-                        <span class="panel-chip chip-instance">DISC. LOSS</span>
-                    </div>
-                    <div
-                        class="image-frame"
-                        style="height: auto; padding: 12px"
-                    >
-                        <video
-                            id="instance-video"
-                            controls
-                            style="
-                                display: none;
-                                width: 100%;
-                                border-radius: 6px;
-                            "
-                        ></video>
-                        <div class="ph" id="ph-instance-video">
-                            Instance output video<br />will appear here.
-                        </div>
-                        <div class="spinner" id="video-spinner-instance"></div>
-                    </div>
-                    <a
-                        id="instance-video-download"
-                        class="btn-download"
-                        style="display: none; margin: 8px 0 0 0"
-                        download="instance_lanes.mp4"
-                        >Download Instance</a
-                    >
-                </div>
-            </div>
-
-            <!-- LIVE OUTPUT GRID -->
-            <div class="preview-grid" id="live-grid" style="display: none">
-                <div class="panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Live Camera Feed</span>
-                        <span class="panel-chip chip-raw">RAW</span>
-                    </div>
-                    <div class="image-frame" style="height: auto; padding: 8px">
-                        <video
-                            id="live-video"
-                            autoplay
-                            muted
-                            playsinline
-                            class="live-video-frame"
-                            style="display: none"
-                        ></video>
-                        <div class="ph" id="ph-live-feed">
-                            Camera feed<br />will appear here.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Binary Segmentation</span>
-                        <span class="panel-chip chip-binary">LIVE</span>
-                    </div>
-                    <div class="image-frame">
-                        <img id="live-binary" alt="Live binary" />
-                        <div class="ph" id="ph-live-binary">
-                            Live binary output<br />will appear here.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <span class="panel-title">Instance Segmentation</span>
-                        <span class="panel-chip chip-instance">LIVE</span>
-                    </div>
-                    <div class="image-frame">
-                        <img id="live-instance" alt="Live instance" />
-                        <div class="ph" id="ph-live-instance">
-                            Live instance output<br />will appear here.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <canvas
-                id="capture-canvas"
-                width="320"
-                height="180"
-                style="display: none"
-            ></canvas>
         </main>
 
         <!-- THEORY PANEL -->
@@ -1454,7 +1592,7 @@
 
             <div class="tp-tabs" id="tabsRow">
                 <button class="tab-btn active" data-tab="overview">
-                    Context
+                    Overview
                 </button>
                 <button class="tab-btn" data-tab="architecture">
                     Structure
@@ -1462,299 +1600,195 @@
                 <button class="tab-btn" data-tab="training">Algorithm</button>
                 <button class="tab-btn" data-tab="inference">Pipeline</button>
                 <button class="tab-btn" data-tab="performance">Metrics</button>
+                <button class="tab-btn" data-tab="deployment">Deployment</button>
                 <button class="tab-btn" data-tab="references">Citations</button>
             </div>
 
             <div class="tp-body">
                 <div class="tc-sidebar">
-                    <div class="badge">Research Paper</div>
-                    <p
-                        style="
-                            margin-top: 20px;
-                            color: var(--dm-gray);
-                            font-size: 14px;
-                        "
-                    >
-                        Towards End-to-End Lane Detection: an Instance
-                        Segmentation Approach
-                    </p>
+                    <a href="https://arxiv.org/abs/1802.05591" target="_blank" rel="noopener"
+                       style="display:block; text-decoration:none; padding: 20px; border: 1.5px solid var(--dm-border); border-radius: var(--radius-md); background: var(--dm-bone); transition: var(--transition);"
+                       onmouseover="this.style.borderColor='var(--dm-red)'" onmouseout="this.style.borderColor='var(--dm-border)'">
+                        <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; color: var(--dm-gold); text-transform: uppercase; margin-bottom: 10px;">Research Paper</div>
+                        <div style="font-family: var(--font-brand); font-size: 20px; color: var(--dm-red); text-transform: uppercase; line-height: 1.1; margin-bottom: 10px;">LaneNet</div>
+                        <div style="font-family: var(--font-body); font-size: 12px; color: var(--dm-gray); line-height: 1.6;">Towards End-to-End Lane Detection: an Instance Segmentation Approach</div>
+                        <div style="font-family: var(--font-mono); font-size: 10px; color: var(--dm-gold); margin-top: 10px;">arXiv:1802.05591 →</div>
+                    </a>
+
                 </div>
                 <div class="tc-content">
                     <!-- OVERVIEW -->
                     <div class="tab-pane active" id="tab-overview">
                         <div class="tc-h2">Visual Intelligence</div>
-                        <div class="tc-sub">Lane Detection Studio // MDS</div>
+                        <div class="tc-sub">Lane Detection Studio // Instance Segmentation</div>
                         <p class="tc-p">
-                            <strong>see lane</strong> implements the
-                            state-of-the-art LaneNet architecture. By leveraging
-                            a single-shot instance segmentation approach, we
-                            provide autonomous systems with the critical ability
-                            to not only identify road lanes but to distinguish
-                            between individual lane instances with pixel-perfect
-                            accuracy.
+                            <strong>Lane Detection Studio</strong> implements the LaneNet architecture from the IEEE IV 2018 paper "Towards End-to-End Lane Detection: an Instance Segmentation Approach." Unlike classical methods relying on hand-crafted edge filters or polynomial fitting, this system treats lane detection as a pixel-wise instance segmentation problem — allowing it to generalise across lighting conditions, occlusion, road markings, and complex multi-lane scenarios.
                         </p>
                         <p class="tc-p">
-                            The system is trained on the
-                            <strong>TuSimple benchmark</strong> and served via a
-                            Flask REST API. A threading lock prevents concurrent
-                            GPU allocation. Pre-trained weights are loaded from
-                            <code>log/best_model.pth</code>.
+                            The system processes a single RGB image through a shared ENet encoder and produces two simultaneous outputs: a <strong>binary segmentation mask</strong> identifying all lane pixels, and an <strong>instance embedding map</strong> that colours each individual lane uniquely. Both are returned as base64-encoded images via a Flask REST API protected by a threading lock to prevent concurrent GPU conflicts.
                         </p>
-                        <div class="card-grid">
-                            <div class="tc-card">
-                                <div class="tc-card-title">
-                                    Binary Segmentation
-                                </div>
-                                <div class="tc-card-body">
-                                    Classifies every pixel as lane or non-lane.
-                                    Uses Focal Loss to handle severe class
-                                    imbalance — lanes occupy only a small
-                                    fraction of any road image.
-                                </div>
-                            </div>
-                            <div class="tc-card">
-                                <div class="tc-card-title">
-                                    Instance Segmentation
-                                </div>
-                                <div class="tc-card-body">
-                                    Assigns a unique identity to each individual
-                                    lane using Discriminative Loss embeddings.
-                                    No explicit instance labels required during
-                                    training.
-                                </div>
-                            </div>
-                            <div class="tc-card">
-                                <div class="tc-card-title">Input / Output</div>
-                                <div class="tc-card-body">
-                                    Input: RGB images resized to 512 × 256.
-                                    Output: 2-channel binary mask + 3-channel
-                                    RGB instance colour map.
-                                </div>
-                                <span class="tc-tag">512 × 256 px</span>
-                            </div>
-                            <div class="tc-card">
-                                <div class="tc-card-title">Deployment</div>
-                                <div class="tc-card-body">
-                                    Flask web server with Docker support. REST
-                                    endpoint at <code>/predict</code>. Supports
-                                    local, AWS EC2, Heroku, and Kubernetes
-                                    deployments.
-                                </div>
-                                <span class="tc-tag red">Docker Ready</span>
-                            </div>
-                        </div>
+                        <p class="tc-p">
+                            Training is performed on the <strong>TuSimple benchmark dataset</strong> using a combined multi-task loss: Focal Loss for binary detection and Discriminative Loss for instance separation. Pre-trained weights are loaded from <code>log/best_model.pth</code>.
+                        </p>
+                        <h3>Why Instance Segmentation?</h3>
+                        <p class="tc-p">
+                            Binary segmentation alone cannot distinguish between lanes — it only tells you where a lane pixel is, not which lane it belongs to. Instance segmentation goes further: each lane is assigned a unique identity in embedding space, enabling the system to count lanes, track lane changes, and support downstream path planning in autonomous systems.
+                        </p>
+                        <ul>
+                            <li>Binary segmentation alone cannot differentiate lane 1 from lane 2</li>
+                            <li>Instance embeddings cluster same-lane pixels and push apart different lanes</li>
+                            <li>No explicit instance labels required — the discriminative loss is self-supervised in structure</li>
+                            <li>Richer output than bounding boxes: pixel-perfect lane boundaries</li>
+                        </ul>
+                        <h3>Core Capabilities</h3>
+                        <ul>
+                            <li>Photo mode: single-image lane detection with overlay comparison</li>
+                            <li>Video mode: full video processing with frame-by-frame inference</li>
+                            <li>Live mode: real-time webcam detection with FPS display</li>
+                            <li>Multiple backbone options: ENet (fast), U-Net (balanced), DeepLabv3+ (accurate)</li>
+                            <li>REST API endpoint at <code>/predict</code> for programmatic integration</li>
+                            <li>Docker-ready deployment for cloud and edge environments</li>
+                        </ul>
                     </div>
 
                     <!-- ARCHITECTURE -->
                     <div class="tab-pane" id="tab-architecture">
                         <div class="tc-h2">The Blueprint</div>
-                        <div class="tc-sub">
-                            Shared Encoder // Multi-Decoder Branch
-                        </div>
+                        <div class="tc-sub">Shared Encoder // Dual Decoder Architecture</div>
                         <p class="tc-p">
-                            Efficiency is at the core of
-                            <strong>see lane</strong>. We utilize a shared
-                            encoder that extracts high-dimensional features
-                            once, feeding into independent decoder branches for
-                            semantic and instance tasks. This architectural
-                            elegance ensures low latency without compromising on
-                            spatial resolution.
+                            LaneNet's core insight is parameter sharing. Rather than running two separate models for binary and instance tasks, a single encoder extracts features once. Two lightweight decoders then specialise independently — one for semantic lane classification, one for instance-level embedding. This halves inference cost while preserving full output fidelity.
                         </p>
+                        <p class="tc-p">
+                            The input is an RGB image resized to <strong>512 × 256 pixels</strong>, normalised using ImageNet statistics (mean [0.485, 0.456, 0.406], std [0.229, 0.224, 0.225]). The binary decoder outputs a 2-channel logit map; the instance decoder outputs a 3-channel embedding space visualised as an RGB colour map.
+                        </p>
+                        <table>
+                            <thead>
+                                <tr><th>Component</th><th>Details</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Encoder</td><td>Shared ENet (or U-Net / DeepLabv3+ backbone)</td></tr>
+                                <tr><td>Binary Decoder</td><td>2-channel output — lane vs. background</td></tr>
+                                <tr><td>Instance Decoder</td><td>3-channel embedding — unique colour per lane</td></tr>
+                                <tr><td>Loss (Binary)</td><td>Focal Loss — handles class imbalance (&lt;5% lane pixels)</td></tr>
+                                <tr><td>Loss (Instance)</td><td>Discriminative Loss — variance + distance + regularisation</td></tr>
+                                <tr><td>Input Size</td><td>512 × 256 px (resized from original resolution)</td></tr>
+                                <tr><td>Output</td><td>Binary mask (2ch) + Instance RGB map (3ch)</td></tr>
+                            </tbody>
+                        </table>
+                        <h3>Supported Backbones</h3>
                         <div class="card-grid">
                             <div class="tc-card">
-                                <div class="tc-card-title">ENet Engine</div>
-                                <div class="tc-card-body">
-                                    A lightweight backbone optimized for
-                                    real-time edge deployment. Minimizes
-                                    parameter count while maximizing performance
-                                    via dilated convolutions.
-                                </div>
-                                <span class="tc-tag">3M Params // 25ms</span>
+                                <div class="tc-card-title">ENet — Default</div>
+                                <div class="tc-card-body">Designed for real-time semantic segmentation on resource-constrained hardware. Uses InitialBlock with parallel max-pool and convolution, followed by BottleneckModules with dilated and asymmetric convolutions. PReLU activations and BatchNorm2d throughout. At ~3M parameters and 25ms inference, it is the recommended backbone for deployment.</div>
+                                <span class="tc-tag">3M Params · 25ms · Real-time</span>
                             </div>
                             <div class="tc-card">
-                                <div class="tc-card-title">DeepLabv3+</div>
-                                <div class="tc-card-body">
-                                    For scenarios requiring maximum fidelity.
-                                    Employs Atrous Spatial Pyramid Pooling
-                                    (ASPP) to capture multi-scale context.
-                                </div>
-                                <span class="tc-tag red"
-                                    >50M Params // 80ms</span
-                                >
+                                <div class="tc-card-title">U-Net — Balanced</div>
+                                <div class="tc-card-body">Classic encoder-decoder with skip connections. 5-level hierarchy with DoubleConv blocks (Conv2d + BatchNorm + ReLU, repeated twice). Progressive channel expansion: 64→128→256→512→1024. Skip connections concatenate encoder feature maps to decoder, preserving fine-grained spatial detail lost during downsampling.</div>
+                                <span class="tc-tag">30M Params · 45ms · Balanced</span>
+                            </div>
+                            <div class="tc-card">
+                                <div class="tc-card-title">DeepLabv3+ — Premium</div>
+                                <div class="tc-card-body">ResNet-101 backbone with Atrous Spatial Pyramid Pooling (ASPP). Five parallel branches with dilation rates 1, 6, 12, 18 plus global average pooling capture multi-scale context without spatial resolution loss. A shortcut connection from low-level features (48 channels) aids boundary precision. Best accuracy for complex scenes.</div>
+                                <span class="tc-tag red">50M Params · 80ms · Max Accuracy</span>
                             </div>
                         </div>
-                        <p class="tc-p">
-                            <strong>Normalisation stats</strong>: mean [0.485,
-                            0.456, 0.406], std [0.229, 0.224, 0.225] — standard
-                            ImageNet statistics for compatibility with
-                            pre-trained encoder weights.
-                        </p>
                     </div>
 
                     <!-- TRAINING -->
                     <div class="tab-pane" id="tab-training">
                         <div class="tc-h2">Training the Model</div>
-                        <div class="tc-sub">
-                            Loss functions, dataset preparation, and
-                            optimisation strategy.
-                        </div>
+                        <div class="tc-sub">Loss Functions · Dataset · Optimisation Strategy</div>
                         <p class="tc-p">
-                            The model is trained end-to-end with a combined loss
-                            that weights binary detection
-                            <strong>10×</strong> more than instance separation,
-                            reflecting the primacy of detecting lane pixels
-                            before differentiating them from one another.
+                            The model is trained end-to-end with a <strong>combined multi-task loss</strong>. Binary detection is weighted 10× heavier than instance separation, reflecting the primacy of correctly identifying lane pixels before differentiating them. The full formula is:
                         </p>
+                        <p class="tc-p" style="font-family: var(--font-mono); font-size: 13px; background: rgba(255,255,255,0.5); padding: 14px 18px; border-radius: 8px; border-left: 3px solid var(--dm-gold);">
+                            Total Loss = 10 × FocalLoss + 0.3 × L_var + 1.0 × L_dist
+                        </p>
+
                         <div class="formula-block">
-                            <div class="formula-name">
-                                Focal Loss — Binary Segmentation
-                            </div>
-                            <div class="formula-eq">
-                                FL(pt) = -alpha(1-pt)^gamma * log(pt)
-                                &nbsp;&nbsp; gamma=2, alpha=[0.25, 0.75]
-                            </div>
+                            <div class="formula-name">Focal Loss — Binary Segmentation</div>
+                            <div class="formula-eq">FL(p<sub>t</sub>) = −α(1−p<sub>t</sub>)<sup>γ</sup> · log(p<sub>t</sub>) &nbsp;&nbsp; γ=2, α=[0.25, 0.75]</div>
                             <div class="formula-desc">
-                                Down-weights the contribution of easy,
-                                correctly-classified background pixels so the
-                                model focuses its learning capacity on the rare
-                                and difficult lane pixels. Weight in combined
-                                loss:
-                                <strong>10x</strong>.
+                                Lanes occupy fewer than 5% of pixels in a typical road image — standard cross-entropy collapses to predicting background. Focal Loss corrects this by down-weighting the loss contribution of easy, correctly-classified background pixels by a factor of (1−p<sub>t</sub>)<sup>γ</sup>. The gamma=2 setting provides aggressive suppression of easy examples. Alpha=[0.25, 0.75] further rebalances background vs. lane classes.
                             </div>
                         </div>
+
                         <div class="formula-block red">
-                            <div class="formula-name">
-                                Discriminative Loss — Instance Segmentation
-                            </div>
-                            <div class="formula-eq">
-                                L = L_var + L_dist + L_reg &nbsp;&nbsp;
-                                delta_var=0.5, delta_dist=1.5, gamma=0.001
-                            </div>
+                            <div class="formula-name">Discriminative Loss — Instance Segmentation</div>
+                            <div class="formula-eq">L = L_var + L_dist + L_reg &nbsp;&nbsp; δ_var=0.5, δ_dist=1.5, γ_reg=0.001</div>
                             <div class="formula-desc">
-                                <strong>L_var</strong> pulls pixels of the same
-                                lane close to their mean embedding.
-                                <strong>L_dist</strong> pushes different lane
-                                mean embeddings apart.
-                                <strong>L_reg</strong> prevents embeddings
-                                growing unbounded. Combined weight:
-                                <strong>0.3 x L_var + 1.0 x L_dist</strong>.
+                                Three terms work together. <strong>L_var</strong> (variance loss) penalises pixels of the same lane instance that are far from their mean embedding — pulling the cluster tight. <strong>L_dist</strong> (distance loss) penalises different lane mean embeddings that are too close — pushing clusters apart. <strong>L_reg</strong> (regularisation) prevents embeddings from growing unboundedly. No explicit instance labels are required: the loss is computed from the predicted embeddings themselves.
                             </div>
                         </div>
+
+                        <h3>Dataset — TuSimple Benchmark</h3>
                         <p class="tc-p">
-                            <strong>Total Loss</strong> = 10 x FocalLoss + 0.3 x
-                            L_var + 1.0 x L_dist
+                            TuSimple provides highway driving sequences at 1280×720 resolution with JSON-format lane annotations. The <code>tusimple_transform.py</code> script converts these to pixel-level binary masks (lane vs. background) and instance masks (unique colour per lane). Images are resized to 512×256 for training. Augmentation applies ColorJitter (brightness, contrast, saturation, hue each ±0.1) to training samples only, improving robustness to lighting variation.
                         </p>
-                        <div class="divider"></div>
-                        <p class="tc-p">
-                            <strong>Dataset — TuSimple Benchmark.</strong> Each
-                            training sample contains an RGB image, a binary
-                            ground-truth mask (lane pixel = 1, background = 0),
-                            and an instance mask where each lane is assigned a
-                            unique colour. Data is generated with
-                            <code>tusimple_transform.py</code> which supports
-                            training-only, train+val, or train+val+test splits.
-                        </p>
-                        <p class="tc-p">
-                            <strong>Data Augmentation (training only):</strong>
-                            Resize to 256x512 → ColorJitter (brightness,
-                            contrast, saturation, hue each ±0.1) → ToTensor →
-                            ImageNet Normalize. Validation uses resize and
-                            normalise only — no augmentation. Label masks are
-                            resized with INTER_NEAREST to preserve discrete
-                            integer values.
-                        </p>
-                        <p class="tc-p">
-                            <strong>Optimiser:</strong> Adam or SGD with
-                            step/exponential learning rate scheduling. Default:
-                            100 epochs, batch size 32, lr = 0.001, weight decay
-                            = 1e-4, validation split = 10%.
-                        </p>
+                        <table>
+                            <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+                            <tbody>
+                                <tr><td>Batch Size</td><td>32 (default)</td></tr>
+                                <tr><td>Optimiser</td><td>Adam or SGD with step/exponential LR decay</td></tr>
+                                <tr><td>Learning Rate</td><td>0.001 (default)</td></tr>
+                                <tr><td>Weight Decay</td><td>1e-4</td></tr>
+                                <tr><td>Epochs</td><td>Configurable (100 recommended)</td></tr>
+                                <tr><td>Validation Split</td><td>10%</td></tr>
+                                <tr><td>Input Normalisation</td><td>ImageNet mean/std</td></tr>
+                                <tr><td>Device</td><td>CUDA GPU (CPU fallback)</td></tr>
+                            </tbody>
+                        </table>
                     </div>
 
                     <!-- INFERENCE -->
                     <div class="tab-pane" id="tab-inference">
                         <div class="tc-h2">Inference Pipeline</div>
-                        <div class="tc-sub">
-                            From browser upload to JSON response — step by step.
-                        </div>
+                        <div class="tc-sub">From Browser Upload to JSON Response</div>
+                        <p class="tc-p">
+                            Every prediction request travels through a six-stage pipeline. A threading lock at stage 2 ensures that on single-GPU deployments, only one forward pass runs at a time — preventing out-of-memory errors under concurrent load.
+                        </p>
                         <div class="steps">
                             <div class="step">
                                 <div class="step-num">1</div>
                                 <div>
-                                    <div class="step-title">Image Upload</div>
-                                    <div class="step-desc">
-                                        User submits a multipart form to
-                                        <code>POST /predict</code>. Flask reads
-                                        the file from
-                                        <code>request.files["image"]</code>.
-                                    </div>
+                                    <div class="step-title">Upload</div>
+                                    <div class="step-desc">User submits a multipart form to <code>POST /predict</code>. Flask reads the file from <code>request.files["image"]</code> and opens it via PIL.</div>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-num">2</div>
                                 <div>
-                                    <div class="step-title">
-                                        Acquire Inference Lock
-                                    </div>
-                                    <div class="step-desc">
-                                        <code>INFERENCE_LOCK</code>
-                                        (threading.Lock) prevents simultaneous
-                                        forward passes, avoiding GPU memory
-                                        conflicts on shared hardware.
-                                    </div>
+                                    <div class="step-title">Acquire Inference Lock</div>
+                                    <div class="step-desc"><code>INFERENCE_LOCK</code> (threading.Lock) is acquired. Any concurrent request blocks here until the current forward pass completes and the lock is released.</div>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-num">3</div>
                                 <div>
                                     <div class="step-title">Preprocess</div>
-                                    <div class="step-desc">
-                                        PIL opens the image. Resize to 512×256 →
-                                        ToTensor → ImageNet Normalize. Tensor
-                                        moved to CUDA if available, else CPU.
-                                    </div>
+                                    <div class="step-desc">Image resized to 512×256. <code>ToTensor()</code> converts PIL to float32 in [0,1]. <code>Normalize(mean, std)</code> applies ImageNet statistics. Tensor moved to CUDA if available, else CPU.</div>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-num">4</div>
                                 <div>
                                     <div class="step-title">Forward Pass</div>
-                                    <div class="step-desc">
-                                        LaneNet forward pass produces binary
-                                        logits (2 channels) and instance
-                                        embeddings (3 channels). Weights from
-                                        <code>log/best_model.pth</code>.
-                                    </div>
+                                    <div class="step-desc">LaneNet's shared encoder processes the tensor. Binary decoder produces 2-channel logits. Instance decoder produces 3-channel embeddings. Weights loaded from <code>log/best_model.pth</code>.</div>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-num">5</div>
                                 <div>
                                     <div class="step-title">Post-process</div>
-                                    <div class="step-desc">
-                                        Argmax over binary logits produces the
-                                        lane mask. Instance embeddings are
-                                        colour-mapped to a 3-channel RGB output.
-                                        Results saved to
-                                        <code>test_output/</code>.
-                                    </div>
+                                    <div class="step-desc">Argmax over binary logits yields the lane mask. Instance embeddings are colour-mapped: pixels belonging to the same lane cluster share a colour, different lanes get different colours.</div>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-num">6</div>
                                 <div>
-                                    <div class="step-title">
-                                        Encode &amp; Respond
-                                    </div>
-                                    <div class="step-desc">
-                                        Both images are base64-encoded and
-                                        returned as:
-                                        <code
-                                            >{ "binary_image": "...",
-                                            "instance_image": "..." }</code
-                                        >. The frontend decodes and displays
-                                        them inline.
-                                    </div>
+                                    <div class="step-title">Encode and Respond</div>
+                                    <div class="step-desc">Both output images are JPEG-compressed and base64-encoded. Returned as <code>{"binary_image": "...", "instance_image": "..."}</code>. Frontend decodes and renders inline without a page reload.</div>
                                 </div>
                             </div>
                         </div>
@@ -1762,15 +1796,283 @@
 
                     <!-- PERFORMANCE -->
                     <div class="tab-pane" id="tab-performance">
-                        <div class="tc-h2">Performance Benchmarks</div>
-                        <div class="tc-sub">
-                            Measured on a single NVIDIA V100 GPU with 640×480
-                            images.
+                        <div class="tc-h2">Benchmarks and Metrics</div>
+                        <div class="tc-sub">Measured on NVIDIA V100 GPU · 640×480 Input</div>
+                        <table>
+                            <thead>
+                                <tr><th>Backbone</th><th>Params</th><th>Inference</th><th>Binary Acc.</th><th>Instance Acc.</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>ENet (default)</strong></td><td>3M</td><td>25ms</td><td class="val-green">92%</td><td class="val-green">89%</td></tr>
+                                <tr><td><strong>U-Net</strong></td><td>30M</td><td>45ms</td><td class="val-green">95%</td><td class="val-green">92%</td></tr>
+                                <tr><td><strong>DeepLabv3+</strong></td><td>50M</td><td>80ms</td><td class="val-green">97%</td><td class="val-green">94%</td></tr>
+                            </tbody>
+                        </table>
+                        <h3>Evaluation Metrics</h3>
+                        <p class="tc-p">Two complementary metrics are used. Dice is preferred for lane tasks due to class imbalance; IoU is the standard segmentation benchmark.</p>
+                        <div class="formula-block">
+                            <div class="formula-name">Dice Coefficient (F1-Score)</div>
+                            <div class="formula-eq">Dice = 2·|A∩B| / (|A| + |B|)</div>
+                            <div class="formula-desc">Range [0,1]. Measures overlap between predicted and ground-truth lane masks. Robust to class imbalance because it normalises by the sum of set sizes rather than the union. Threshold at 0.5 for binarising continuous predictions. A Dice of 0.92 means the predicted mask overlaps the ground truth by 92% on average.</div>
                         </div>
-                        <table class="metrics-table">
+                        <div class="formula-block red">
+                            <div class="formula-name">Intersection over Union (IoU / Jaccard Index)</div>
+                            <div class="formula-eq">IoU = |A∩B| / |A∪B|</div>
+                            <div class="formula-desc">Range [0,1]. Stricter than Dice — penalises false positives and false negatives equally and symmetrically. The standard metric for segmentation challenges. IoU is always lower than Dice for the same prediction: IoU = Dice / (2 − Dice). Used to compare across published benchmarks.</div>
+                        </div>
+                        <h3>Trade-off Summary</h3>
+                        <ul>
+                            <li>ENet: 40fps real-time capable, suitable for mobile and edge hardware, lowest memory footprint</li>
+                            <li>U-Net: Best balance of speed and accuracy for server-side deployment</li>
+                            <li>DeepLabv3+: Maximum accuracy for challenging scenarios — sharp curves, adverse lighting, occlusion</li>
+                        </ul>
+                    </div>
+
+                    <!-- DEPLOYMENT -->
+                    <div class="tab-pane" id="tab-deployment">
+                        <div class="tc-h2">Deployment Options</div>
+                        <div class="tc-sub">Local · Docker · AWS · Kubernetes</div>
+                        <p class="tc-p">The Flask application exposes a single REST endpoint at <code>POST /predict</code>. It accepts a multipart image upload and returns a JSON payload with two base64-encoded output images. Any of the four deployment strategies below will serve this endpoint.</p>
+                        <h3>Option 1 — Local Development</h3>
+                        <pre>pip install -r requirements.txt
+python app.py
+# Access at http://localhost:5000</pre>
+
+                        <h3>Option 2 — Docker</h3>
+                        <pre>docker build -t lane-detection:latest .
+docker run -p 5000:5000 lane-detection:latest
+# GPU support:
+docker run --gpus all -p 5000:5000 lane-detection:latest</pre>
+
+                        <h3>Option 3 — AWS EC2</h3>
+                        <p class="tc-p">Recommended instance: g4dn.xlarge (NVIDIA T4 GPU). Use Gunicorn for production-grade concurrency:</p>
+                        <pre>git clone https://github.com/Siddh-456/Lane-Detection.git
+cd Lane-Detection && pip install -r requirements.txt
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app</pre>
+
+                        <h3>Option 4 — Kubernetes</h3>
+                        <pre>kubectl apply -f k8s/deployment.yaml
+kubectl expose deployment lane-detection \
+  --type=LoadBalancer --port=80 --target-port=5000</pre>
+                    </div>
+
+                    <!-- REFERENCES -->
+                    <div class="tab-pane" id="tab-references">
+                        <div class="tc-h2">References</div>
+                        <div class="tc-sub">Papers this project builds upon</div>
+                        <a class="cite-link" href="https://arxiv.org/abs/1802.05591" target="_blank">
+                            <span class="cite-num">[1]</span>
+                            <div>
+                                <div class="cite-title">Towards End-to-End Lane Detection: an Instance Segmentation Approach</div>
+                                <div class="cite-meta">Neven, De Brabandere, Georgoulis, Proesmans, Van Gool · IEEE IV 2018 · arXiv:1802.05591</div>
+                            </div>
+                        </a>
+                        <a class="cite-link" href="https://arxiv.org/abs/1606.02147" target="_blank">
+                            <span class="cite-num">[2]</span>
+                            <div>
+                                <div class="cite-title">ENet: A Deep Neural Network Architecture for Real-Time Semantic Segmentation</div>
+                                <div class="cite-meta">Paszke, Chaurasia, Kim, Culurciello · arXiv:1606.02147 · 2016</div>
+                            </div>
+                        </a>
+                        <a class="cite-link" href="https://arxiv.org/abs/1708.02551" target="_blank">
+                            <span class="cite-num">[3]</span>
+                            <div>
+                                <div class="cite-title">Semantic Instance Segmentation with a Discriminative Loss Function</div>
+                                <div class="cite-meta">De Brabandere, Neven, Van Gool · arXiv:1708.02551 · 2017</div>
+                            </div>
+                        </a>
+                        <a class="cite-link" href="https://arxiv.org/abs/1708.02051" target="_blank">
+                            <span class="cite-num">[4]</span>
+                            <div>
+                                <div class="cite-title">Focal Loss for Dense Object Detection</div>
+                                <div class="cite-meta">Lin, Goyal, Girshick, He, Dollár · ICCV 2017 · arXiv:1708.02051</div>
+                            </div>
+                        </a>
+                        <a class="cite-link" href="https://arxiv.org/abs/1802.02611" target="_blank">
+                            <span class="cite-num">[5]</span>
+                            <div>
+                                <div class="cite-title">DeepLabv3+: Encoder-Decoder with Atrous Separable Convolution</div>
+                                <div class="cite-meta">Chen, Zhu, Papandreou, Schroff, Adam · ECCV 2018 · arXiv:1802.02611</div>
+                            </div>
+                        </a>
+                        <div class="divider"></div>
+                        <p class="tc-p"><strong>Tech Stack:</strong> PyTorch 1.2+ · Torchvision · Flask · OpenCV · Pillow · NumPy · Pandas · scikit-image · Base64 · threading.Lock · Docker · TuSimple Dataset</p>
+                    </div>
+                </div>
+
+                    <!-- ARCHITECTURE -->
+                    <div class="tab-pane" id="tab-architecture">
+                        <div class="tc-h2">The Blueprint</div>
+                        <div class="tc-sub">Shared Encoder // Multi-Decoder Branch</div>
+                        <p class="tc-p">
+                            LaneNet uses a shared encoder feeding into two independent decoders. This architectural elegance ensures low latency without compromising on spatial resolution.
+                        </p>
+
+                        <table>
                             <thead>
                                 <tr>
-                                    <th>Model</th>
+                                    <th>Component</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Encoder</td>
+                                    <td>Lightweight ENet (or U-Net/DeepLabv3+ for accuracy)</td>
+                                </tr>
+                                <tr>
+                                    <td>Binary Decoder</td>
+                                    <td>Semantic segmentation (lane pixel detection)</td>
+                                </tr>
+                                <tr>
+                                    <td>Instance Decoder</td>
+                                    <td>Instance segmentation (individual lane identification)</td>
+                                </tr>
+                                <tr>
+                                    <td>Loss Functions</td>
+                                    <td>Focal Loss (binary) + Discriminative Loss (instance)</td>
+                                </tr>
+                                <tr>
+                                    <td>Input</td>
+                                    <td>RGB images (3 channels), resized to 512 × 256</td>
+                                </tr>
+                                <tr>
+                                    <td>Output</td>
+                                    <td>Binary mask (2 channels) + Instance map (3 channels RGB)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3>Supported Backbones</h3>
+                        <div class="card-grid">
+                            <div class="tc-card">
+                                <div class="tc-card-title">ENet Engine (Default)</div>
+                                <div class="tc-card-body">
+                                    Optimized for real-time edge deployment. Minimizes parameter count (~3M) while maximizing performance via dilated and asymmetric convolutions.
+                                </div>
+                                <span class="tc-tag">3M Params // 25ms Inference</span>
+                            </div>
+                            <div class="tc-card">
+                                <div class="tc-card-title">U-Net Balanced</div>
+                                <div class="tc-card-body">
+                                    5-level encoder with DoubleConv blocks. Progressive channel expansion and skip connections preserve fine spatial details.
+                                </div>
+                                <span class="tc-tag">30M Params // 45ms Inference</span>
+                            </div>
+                            <div class="tc-card">
+                                <div class="tc-card-title">DeepLabv3+ Premium</div>
+                                <div class="tc-card-body">
+                                    ResNet-101 backbone with ASPP (Atrous Spatial Pyramid Pooling). Captures multi-scale context for maximum accuracy.
+                                </div>
+                                <span class="tc-tag red">50M Params // 80ms Inference</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TRAINING -->
+                    <div class="tab-pane" id="tab-training">
+                        <div class="tc-h2">Training the Model</div>
+                        <div class="tc-sub">Loss functions, datasets, and optimisation strategy.</div>
+                        <p class="tc-p">
+                            The model is trained end-to-end with a combined multi-task loss that emphasizes binary lane detection. Total Loss = 10 × Binary Loss + (0.3 × Var Loss + 1.0 × Dist Loss).
+                        </p>
+
+                        <div class="formula-block">
+                            <div class="formula-name">Focal Loss — Binary Segmentation</div>
+                            <div class="formula-eq">FL(pt) = -alpha(1-pt)^gamma * log(pt) &nbsp;&nbsp; gamma=2, alpha=[0.25, 0.75]</div>
+                            <div class="formula-desc">
+                                Addresses severe class imbalance (<5% lane pixels). Down-weights easy, correctly-classified pixels to focus on difficult lane features.
+                            </div>
+                        </div>
+
+                        <div class="formula-block red">
+                            <div class="formula-name">Discriminative Loss — Instance Segmentation</div>
+                            <div class="formula-eq">L_var (variance) + L_dist (distance) + L_reg (reg)</div>
+                            <div class="formula-desc">
+                                <strong>L_var</strong> pulls pixels of the same lane close to their mean embedding. <strong>L_dist</strong> pushes different lane mean embeddings apart.
+                            </div>
+                        </div>
+
+                        <h3>Dataset Preparation</h3>
+                        <p class="tc-p">
+                            <strong>TuSimple Dataset:</strong> RGB images resized from 1280×720 to 512×256. 
+                            <strong>Augmentation:</strong> ColorJitter (brightness, contrast, saturation, hue each ±0.1) for training stability.
+                        </p>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Batch Size</td>
+                                    <td>Default 32</td>
+                                </tr>
+                                <tr>
+                                    <td>Optimizer</td>
+                                    <td>Adam or SGD</td>
+                                </tr>
+                                <tr>
+                                    <td>Input Size</td>
+                                    <td>512 × 256</td>
+                                </tr>
+                                <tr>
+                                    <td>Device</td>
+                                    <td>GPU (CUDA) or CPU</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- INFERENCE -->
+                    <div class="tab-pane" id="tab-inference">
+                        <div class="tc-h2">Inference Pipeline</div>
+                        <div class="tc-sub">From raw input to JSON-encoded visualization.</div>
+                        <div class="steps">
+                            <div class="step">
+                                <div class="step-num">1</div>
+                                <div>
+                                    <div class="step-title">Preprocessing</div>
+                                    <div class="step-desc">Resize to 512 × 256 and apply ImageNet normalization. Tensor moved to CUDA if available.</div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">2</div>
+                                <div>
+                                    <div class="step-title">Forward Pass</div>
+                                    <div class="step-desc">Encoder extracts features; Binary decoder outputs logits; Instance decoder outputs embeddings.</div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">3</div>
+                                <div>
+                                    <div class="step-title">Post-processing</div>
+                                    <div class="step-desc">Binary: argmax + softmax. Instance: sigmoid probability map.</div>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-num">4</div>
+                                <div>
+                                    <div class="step-title">Encode & Respond</div>
+                                    <div class="step-desc">Results base64-encoded and returned as JSON payload to the Studio interface.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PERFORMANCE -->
+                    <div class="tab-pane" id="tab-performance">
+                        <div class="tc-h2">Benchmarks & Metrics</div>
+                        <div class="tc-sub">Measured on NVIDIA V100 GPU with 640×480 images.</div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Backbone</th>
                                     <th>Params</th>
                                     <th>Inference</th>
                                     <th>Binary Acc.</th>
@@ -1779,122 +2081,109 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><strong>ENet</strong> (default)</td>
+                                    <td><strong>ENet (default)</strong></td>
                                     <td>3M</td>
                                     <td>25ms</td>
-                                    <td class="val-green">92%</td>
-                                    <td class="val-green">89%</td>
+                                    <td>92%</td>
+                                    <td>89%</td>
                                 </tr>
                                 <tr>
                                     <td><strong>U-Net</strong></td>
                                     <td>30M</td>
                                     <td>45ms</td>
-                                    <td class="val-green">95%</td>
-                                    <td class="val-green">92%</td>
+                                    <td>95%</td>
+                                    <td>92%</td>
                                 </tr>
                                 <tr>
                                     <td><strong>DeepLabv3+</strong></td>
                                     <td>50M</td>
                                     <td>80ms</td>
-                                    <td class="val-green">97%</td>
-                                    <td class="val-green">94%</td>
+                                    <td>97%</td>
+                                    <td>94%</td>
                                 </tr>
                             </tbody>
                         </table>
-                        <div class="divider"></div>
-                        <p class="tc-p">
-                            <strong>Evaluation Metrics</strong> used throughout
-                            training:
-                        </p>
+
+                        <h3>Evaluation Metrics</h3>
                         <div class="formula-block">
-                            <div class="formula-name">
-                                Dice Coefficient (F1-score)
-                            </div>
-                            <div class="formula-eq">
-                                Dice = 2 * |A∩B| / (|A| + |B|)
-                            </div>
-                            <div class="formula-desc">
-                                Range [0,1]. More robust to class imbalance than
-                                pixel accuracy. Threshold applied at 0.5 for
-                                binarising predictions. Preferred metric for
-                                lane evaluation.
-                            </div>
+                            <div class="formula-name">Dice Coefficient (F1-Score)</div>
+                            <div class="formula-eq">Dice = 2 * |A∩B| / (|A| + |B|)</div>
+                            <div class="formula-desc">Robust to class imbalance. preferred for lane detection where lanes occupy small image regions.</div>
                         </div>
                         <div class="formula-block red">
-                            <div class="formula-name">
-                                Intersection over Union (IoU)
-                            </div>
+                            <div class="formula-name">Intersection over Union (IoU)</div>
                             <div class="formula-eq">IoU = |A∩B| / |A∪B|</div>
-                            <div class="formula-desc">
-                                Range [0,1]. Stricter than Dice — penalises
-                                false positives and false negatives equally.
-                                Standard segmentation benchmark metric.
-                            </div>
+                            <div class="formula-desc">Stricter benchmark metric. Penalises false positives and false negatives equally.</div>
                         </div>
+                    </div>
+
+                    <!-- DEPLOYMENT -->
+                    <div class="tab-pane" id="tab-deployment">
+                        <div class="tc-h2">Deployment Options</div>
+                        <div class="tc-sub">Scale your implementation from Local to Kubernetes.</div>
+                        
+                        <h3>Option 1: Local Development</h3>
+                        <pre>pip install -r requirements.txt
+python app.py</pre>
+
+                        <h3>Option 2: Docker Delivery</h3>
+                        <pre># Build
+docker build -t lane-detection:latest .
+# Run
+docker run -p 5000:5000 lane-detection:latest</pre>
+
+                        <h3>Option 3: AWS / EC2</h3>
+                        <p class="tc-p">Recommended: g4dn.xlarge for GPU acceleration. Run with Gunicorn for production traffic:</p>
+                        <pre>pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app</pre>
+
+                        <h3>Option 4: Kubernetes</h3>
+                        <pre>kubectl apply -f k8s/deployment.yaml
+kubectl expose deployment lane-detection --type=LoadBalancer --port=80 --target-port=5000</pre>
                     </div>
 
                     <!-- REFERENCES -->
                     <div class="tab-pane" id="tab-references">
                         <div class="tc-h2">References</div>
-                        <div class="tc-sub">
-                            The research papers this project builds upon.
-                        </div>
+                        <div class="tc-sub">The research papers this project builds upon.</div>
 
-                        <a
-                            class="cite-link"
-                            href="https://arxiv.org/abs/1802.05591"
-                            target="_blank"
-                            rel="noopener"
-                        >
+                        <a class="cite-link" href="https://arxiv.org/abs/1802.05591" target="_blank">
                             <span class="cite-num">[1]</span>
                             <div>
-                                <div class="cite-title">
-                                    Towards End-to-End Lane Detection: an
-                                    Instance Segmentation Approach
-                                </div>
-                                <div class="cite-meta">
-                                    Neven, De Brabandere, Georgoulis, Proesmans,
-                                    Van Gool · 2018 IEEE Intelligent Vehicles
-                                    Symposium · arXiv:1802.05591
-                                </div>
+                                <div class="cite-title">Towards End-to-End Lane Detection: an Instance Segmentation Approach</div>
+                                <div class="cite-meta">Neven, De Brabandere et al. · 2018 IEEE IV · arXiv:1802.05591</div>
                             </div>
                         </a>
 
-                        <a
-                            class="cite-link"
-                            href="https://arxiv.org/abs/1606.02147"
-                            target="_blank"
-                            rel="noopener"
-                        >
+                        <a class="cite-link" href="https://arxiv.org/abs/1606.02147" target="_blank">
                             <span class="cite-num">[2]</span>
                             <div>
-                                <div class="cite-title">
-                                    ENet: A Deep Neural Network Architecture for
-                                    Real-Time Semantic Segmentation
-                                </div>
-                                <div class="cite-meta">
-                                    Paszke, Chaurasia, Kim, Culurciello ·
-                                    arXiv:1606.02147 · 2016
-                                </div>
+                                <div class="cite-title">ENet: A Deep Neural Network Architecture for Real-Time Semantic Segmentation</div>
+                                <div class="cite-meta">Paszke, Chaurasia et al. · arXiv:1606.02147 · 2016</div>
                             </div>
                         </a>
 
-                        <a
-                            class="cite-link"
-                            href="https://arxiv.org/abs/1708.02551"
-                            target="_blank"
-                            rel="noopener"
-                        >
+                        <a class="cite-link" href="https://arxiv.org/abs/1708.02551" target="_blank">
                             <span class="cite-num">[3]</span>
                             <div>
-                                <div class="cite-title">
-                                    Semantic Instance Segmentation with a
-                                    Discriminative Loss Function
-                                </div>
-                                <div class="cite-meta">
-                                    De Brabandere, Neven, Van Gool ·
-                                    arXiv:1708.02551 · 2017
-                                </div>
+                                <div class="cite-title">Semantic Instance Segmentation with a Discriminative Loss Function</div>
+                                <div class="cite-meta">De Brabandere, Neven et al. · arXiv:1708.02551 · 2017</div>
+                            </div>
+                        </a>
+
+                        <a class="cite-link" href="https://arxiv.org/abs/1708.02051" target="_blank">
+                            <span class="cite-num">[4]</span>
+                            <div>
+                                <div class="cite-title">Focal Loss for Dense Object Detection</div>
+                                <div class="cite-meta">Lin, Goyal et al. · ICCV 2017 · arXiv:1708.02051</div>
+                            </div>
+                        </a>
+
+                        <a class="cite-link" href="https://arxiv.org/abs/1802.02611" target="_blank">
+                            <span class="cite-num">[5]</span>
+                            <div>
+                                <div class="cite-title">DeepLabv3+: Encoder-Decoder with Atrous Separable Convolution</div>
+                                <div class="cite-meta">Chen, Zhu et al. · ECCV 2018 · arXiv:1802.02611</div>
                             </div>
                         </a>
 
@@ -1956,39 +2245,17 @@
 
             // ── MODE SELECTOR ──────────────────────────────────────────────
             const modeButtons = document.querySelectorAll(".btn-mode");
+            const photoControls = document.getElementById("photo-controls");
+            const videoControls = document.getElementById("video-controls");
+            const liveControls = document.getElementById("live-controls");
 
             function switchMode(mode) {
                 modeButtons.forEach((b) =>
                     b.classList.toggle("active", b.dataset.mode === mode),
                 );
-                document.getElementById("photo-trigger").style.display =
-                    mode === "photo" ? "" : "none";
-                document.getElementById("video-trigger").style.display =
-                    mode === "video" ? "" : "none";
-                document.getElementById("live-trigger").style.display =
-                    mode === "live" ? "" : "none";
-                document.getElementById("photo-action").style.display =
-                    mode === "photo" ? "" : "none";
-                document.getElementById("video-action").style.display =
-                    mode === "video" ? "" : "none";
-                document.getElementById("live-action").style.display =
-                    mode === "live" ? "" : "none";
-                document.getElementById("filename").style.display =
-                    mode === "photo" ? "" : "none";
-                document.getElementById("video-filename").style.display =
-                    mode === "video" ? "" : "none";
-                document.getElementById("status-bar").style.display =
-                    mode === "photo" ? "" : "none";
-                document.getElementById("video-status-bar").style.display =
-                    mode === "video" ? "" : "none";
-                document.getElementById("live-status-bar").style.display =
-                    mode === "live" ? "" : "none";
-                document.getElementById("photo-grid").style.display =
-                    mode === "photo" ? "" : "none";
-                document.getElementById("video-grid").style.display =
-                    mode === "video" ? "" : "none";
-                document.getElementById("live-grid").style.display =
-                    mode === "live" ? "" : "none";
+                photoControls.style.display = mode === "photo" ? "" : "none";
+                videoControls.style.display = mode === "video" ? "" : "none";
+                liveControls.style.display = mode === "live" ? "" : "none";
                 if (mode !== "live") stopLiveCamera();
             }
 
@@ -2143,12 +2410,7 @@
             const phBinaryVideo = document.getElementById("ph-binary-video");
             const phInstanceVideo =
                 document.getElementById("ph-instance-video");
-            const binaryVideoDownload = document.getElementById(
-                "binary-video-download",
-            );
-            const instanceVideoDownload = document.getElementById(
-                "instance-video-download",
-            );
+
             const videoSpinnerBinary = document.getElementById(
                 "video-spinner-binary",
             );
@@ -2171,6 +2433,7 @@
                     instanceVideoObjectUrl = null;
                 }
             }
+
             function setVideoStatus(msg, state = "") {
                 videoStatusText.textContent = msg;
                 videoStatusBar.className =
@@ -2183,11 +2446,13 @@
                 videoFilenameEl.textContent = file.name;
                 videoRunButton.disabled = false;
                 setVideoStatus("Video ready — click Process Video.");
+                // Show raw video preview immediately from the local file
                 if (rawVideoUrl) URL.revokeObjectURL(rawVideoUrl);
                 rawVideoUrl = URL.createObjectURL(file);
                 rawVideoEl.src = rawVideoUrl;
                 rawVideoEl.style.display = "block";
                 phRawVideo.style.display = "none";
+                // Reset output panels for a fresh run
                 revokeOutputVideoUrls();
                 binaryVideoEl.style.display = "none";
                 binaryVideoEl.src = "";
@@ -2195,8 +2460,6 @@
                 instanceVideoEl.src = "";
                 phBinaryVideo.style.display = "block";
                 phInstanceVideo.style.display = "block";
-                binaryVideoDownload.style.display = "none";
-                instanceVideoDownload.style.display = "none";
             });
 
             videoRunButton.addEventListener("click", async () => {
@@ -2216,8 +2479,6 @@
                 instanceVideoEl.style.display = "none";
                 binaryVideoEl.src = "";
                 instanceVideoEl.src = "";
-                binaryVideoDownload.style.display = "none";
-                instanceVideoDownload.style.display = "none";
                 videoSpinnerBinary.classList.add("visible");
                 videoSpinnerInstance.classList.add("visible");
                 phBinaryVideo.style.display = "none";
@@ -2265,12 +2526,8 @@
                     instanceVideoObjectUrl = URL.createObjectURL(instForVideo);
                     binaryVideoEl.src = binaryVideoObjectUrl;
                     instanceVideoEl.src = instanceVideoObjectUrl;
-                    binaryVideoDownload.href = binaryVideoObjectUrl;
-                    instanceVideoDownload.href = instanceVideoObjectUrl;
                     binaryVideoEl.style.display = "block";
                     instanceVideoEl.style.display = "block";
-                    binaryVideoDownload.style.display = "inline-block";
-                    instanceVideoDownload.style.display = "inline-block";
                     setVideoStatus(
                         "Video processing complete — review outputs below.",
                     );
@@ -2370,7 +2627,7 @@
                         captureCanvas.height,
                     );
                     const blob = await new Promise((resolve) =>
-                        captureCanvas.toBlob(resolve, "image/jpeg", 0.7),
+                        captureCanvas.toBlob(resolve, "image/jpeg", 0.5),
                     );
                     if (!blob || !liveRunning) break;
                     const fd = new FormData();
@@ -2392,6 +2649,7 @@
                             phLiveInstance.style.display = "none";
                             liveBinaryImg.classList.add("visible");
                             liveInstanceImg.classList.add("visible");
+                            // FPS calculation
                             fpsFrameCount++;
                             const now = performance.now();
                             const elapsed = (now - fpsLastTime) / 1000;
@@ -2407,6 +2665,7 @@
                         if (liveRunning)
                             setLiveStatus("Frame error: " + e.message, "error");
                     }
+                    await new Promise((r) => setTimeout(r, 200));
                 }
             }
 
@@ -2442,7 +2701,6 @@
                     "car",
                     "car",
                     "car",
-                    "car",
                     "truck",
                     "truck",
                     "bike",
@@ -2457,11 +2715,11 @@
                         speed: 0.0003 + Math.random() * 0.0007,
                         type: TYPES[Math.floor(Math.random() * TYPES.length)],
                         color: [
-                            "#C8B48A",
-                            "#B09C72",
-                            "#A08C68",
-                            "#C4AE84",
-                            "#B09878",
+                            "#C41028",
+                            "#1A1A1A",
+                            "#5A5245",
+                            "#8A7652",
+                            "#333",
                         ][Math.floor(Math.random() * 5)],
                     });
                 }
@@ -2508,7 +2766,7 @@
                         if (t === 0) ctx.moveTo(p.x + sway, p.y);
                         else ctx.lineTo(p.x + sway, p.y);
                     }
-                    ctx.strokeStyle = "rgba(90, 70, 40, 0.45)";
+                    ctx.strokeStyle = "rgba(26,26,26,0.5)";
                     ctx.lineWidth = 2;
                     ctx.setLineDash([20, 30]);
                     ctx.lineDashOffset = -time * 0.05;
@@ -2523,16 +2781,14 @@
                         Math.sin(v.t * 4 + time * 0.0005 + lane.offset) * 15;
                     const x = p.x + sway,
                         y = p.y;
-
                     ctx.fillStyle = v.color;
-
                     if (v.type === "car") {
                         ctx.beginPath();
                         ctx.roundRect(x - 7, y - 12, 14, 24, 4);
                         ctx.fill();
-                        ctx.fillStyle = "rgba(165,148,115,0.5)";
+                        ctx.fillStyle = "rgba(200,191,168,0.5)";
                         ctx.fillRect(x - 4, y - 7, 8, 5);
-                        ctx.fillStyle = "rgba(60,45,25,0.7)";
+                        ctx.fillStyle = "#111";
                         ctx.fillRect(x - 8, y - 9, 2, 5);
                         ctx.fillRect(x + 6, y - 9, 2, 5);
                         ctx.fillRect(x - 8, y + 4, 2, 5);
@@ -2541,13 +2797,14 @@
                         ctx.beginPath();
                         ctx.roundRect(x - 9, y - 8, 18, 12, 3);
                         ctx.fill();
-                        ctx.fillStyle = "rgba(90,72,50,0.8)";
+                        ctx.fillStyle =
+                            v.color === "#C41028" ? "#8a0c1e" : "#333";
                         ctx.beginPath();
                         ctx.roundRect(x - 10, y + 4, 20, 22, 2);
                         ctx.fill();
-                        ctx.fillStyle = "rgba(165,148,115,0.5)";
+                        ctx.fillStyle = "rgba(200,191,168,0.5)";
                         ctx.fillRect(x - 6, y - 5, 12, 5);
-                        ctx.fillStyle = "rgba(60,45,25,0.7)";
+                        ctx.fillStyle = "#111";
                         ctx.fillRect(x - 11, y - 4, 2, 5);
                         ctx.fillRect(x + 9, y - 4, 2, 5);
                         ctx.fillRect(x - 11, y + 10, 2, 5);
@@ -2561,7 +2818,7 @@
                         ctx.beginPath();
                         ctx.arc(x, y - 12, 3, 0, Math.PI * 2);
                         ctx.fill();
-                        ctx.fillStyle = "rgba(60,45,25,0.7)";
+                        ctx.fillStyle = "#111";
                         ctx.beginPath();
                         ctx.arc(x, y - 14, 2, 0, Math.PI * 2);
                         ctx.fill();
@@ -2569,7 +2826,6 @@
                         ctx.arc(x, y + 10, 2, 0, Math.PI * 2);
                         ctx.fill();
                     }
-
                     const glowR =
                         v.type === "truck" ? 20 : v.type === "bike" ? 10 : 15;
                     const grad = ctx.createRadialGradient(
@@ -2580,7 +2836,12 @@
                         y - 12,
                         glowR,
                     );
-                    grad.addColorStop(0, "rgba(160,130,80,0.15)");
+                    grad.addColorStop(
+                        0,
+                        v.color === "#C41028"
+                            ? "rgba(196,16,40,0.2)"
+                            : "rgba(26,26,26,0.1)",
+                    );
                     grad.addColorStop(1, "transparent");
                     ctx.fillStyle = grad;
                     ctx.beginPath();
